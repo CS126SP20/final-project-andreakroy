@@ -52,17 +52,24 @@ class Square {
 
 class Board {
  private:
+  // Grid storing all 64 squares on the board.
   Square* grid_[kSize * kSize];
  public:
+  // Default board constructor. Returns a board with the default board setup.
   Board();
+  // Board destructor.
   ~Board();
+  // Board copy constructor.
   Board(const Board& other);
+  // Board copy assignment operator.
   auto operator=(const Board& other) -> Board&;
+  // Returns a const pointer to the square at position (x, y);
   auto At(const size_t x, const size_t y) const -> const Square*;
+  // Sets the piece at the given square to the piece parameter.
   void Set(const Square* at, Piece* p);
+  // Output stream operator to print a board to the console.
   friend auto operator << (std::ostream& out, const Board& b) -> std::ostream&;
 };
 }   // namespace board
-
 
 #endif  // FINALPROJECT_BOARD_H
