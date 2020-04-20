@@ -1,7 +1,8 @@
 // Copyright (c) 2020 Andrea Roy. All rights reserved.
 
-#include <cassert>
 #include <chess/piece.h>
+
+#include <cassert>
 
 namespace piece {
 
@@ -112,7 +113,7 @@ vector<tuple<size_t, size_t>> Bishop::Path(const size_t x_old,
   }
   int y = y_old;
   for (int i = x_old + 1; i != x_new; i += xf) {
-    path.push_back(make_tuple(i, y));
+    path.emplace_back(make_tuple(i, y));
     y += yf;
   }
   return path;
@@ -135,14 +136,44 @@ vector<tuple<size_t, size_t>> Rook::Path(const size_t x_old, const size_t y_old,
   // The rook's path consists of every position along the rank or file.
   if (x_old == x_new) {
     for (int i = min(y_new, y_old) + 1; i <= max(y_new, y_old); i++) {
-      path.push_back(make_tuple(x_new, i));
+      path.emplace_back(make_tuple(x_new, i));
     }
   } else {
     for (int i = min(x_new, x_old) + 1; i <= max(x_new, x_old); i++) {
-      path.push_back(make_tuple(i, y_new));
+      path.emplace_back(make_tuple(i, y_new));
     }
   }
   return path;
 }
 
+bool Queen::CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
+                    const size_t y_new) const {
+  size_t x_diff = abs(x_new - x_old);
+  size_t y_diff = abs(y_new - y_old);
+  // A queen move is legal if the move is either a legal bishop move or a
+  // valid rook move.
+  return (x_diff == 0 != y_diff == 0) || x_diff == y_diff;
+}
+auto Queen::Path(const size_t x_old, const size_t y_old, const size_t x_new,
+                 const size_t y_new) const -> vector<tuple<size_t, size_t>> {
+  assert(CanMove(x_old, y_old, x_new, y_new));
+  vector<tuple<size_t, size_t>> path;
+  int xf = 1;
+  int yf = 1;
+  if (x_old == x_new) {
+    for (int i = min(y_new, y_old) + 1; i <= max(y_new, y_old); i++) {
+      path.emplace_back(make_tuple(x_new, i));
+    }
+    return path;
+  } else if (y_old == y_new) {
+    for (int i = min(x_new, x_old) + 1; i <= max(x_new, x_old); i++) {
+      path.emplace_back(make_tuple(i, y_new));
+    }
+    return path;
+  } else if (x_new - x_old < 0) {
+    xf = -1;
+  } else if (y_new - y_old < 0) {
+    yf = -1;
+  }
+}
 }  // namespace piece

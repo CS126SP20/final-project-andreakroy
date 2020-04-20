@@ -63,41 +63,50 @@ class Knight : public Piece {
   // Knight constructor.
   explicit Knight(Color c);
   // Knight override of the CanMove piece method.
-  bool CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
-               const size_t y_new) const override;
+  auto CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
+               const size_t y_new) const -> bool override;
   // Knight override of the Path piece method.
-  vector<tuple<size_t, size_t>> Path(const size_t x_old, const size_t y_old,
-                                     const size_t x_new,
-                                     const size_t y_new) const override;
+  auto Path(const size_t x_old, const size_t y_old, const size_t x_new,
+            const size_t y_new) const -> vector<tuple<size_t, size_t>> override;
 };
 
 // Class representing a bishop object.
 class Bishop : public Piece {
  public:
   // Bishop constructor.
-  Bishop(const Color c);
+  explicit Bishop(const Color c);
   // Bishop override of the CanMove piece method.
-  bool CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
-               const size_t y_new) const override;
+  auto CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
+               const size_t y_new) const -> bool override;
   // Bishop override of the Path piece method.
-  vector<tuple<size_t, size_t>> Path(const size_t x_old, const size_t y_old,
-                                     const size_t x_new,
-                                     const size_t y_new) const override;
+  auto Path(const size_t x_old, const size_t y_old, const size_t x_new,
+            const size_t y_new) const -> vector<tuple<size_t, size_t>> override;
 };
 
 class Rook : public Piece {
  public:
   // Rook override of the CanMove piece method.
-  bool CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
-               const size_t y_new) const override;
+  auto CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
+               const size_t y_new) const -> bool override;
   // Rook override of the piece Path method.
-  vector<tuple<size_t, size_t>> Path(const size_t x_old, const size_t y_old,
-                                     const size_t x_new,
-                                     const size_t y_new) const override;
+  auto Path(const size_t x_old, const size_t y_old, const size_t x_new,
+            const size_t y_new) const -> vector<tuple<size_t, size_t>> override;
   // Rook constructor.
   Rook(const Color c);
 };
 
+// Class representing a queen object.
+class Queen : public Piece {
+ public:
+  // Queen override of the CanMove Piece method.
+  auto CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
+               const size_t y_new) const -> bool override;
+  // Queen override of the Path Piece method.
+  auto Path(const size_t x_old, const size_t y_old, const size_t x_new,
+            const size_t y_new) const -> vector<tuple<size_t, size_t>> override;
+  // Queen constructor.
+  explicit Queen(const Color c);
+};
 
 }  // namespace piece
 
