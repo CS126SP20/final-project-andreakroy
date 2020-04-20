@@ -86,4 +86,36 @@ vector<tuple<size_t, size_t>> Knight::Path(const size_t x_old,
   return path;
 }
 
+Bishop::Bishop(const Color c) : Piece(PieceType::kBishop, c) {}
+bool Bishop::CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
+                     const size_t y_new) const {
+  // A bishop must move exactly the same number of squares horizontally as
+  // vertically.
+  size_t x_diff = abs(x_new - x_old);
+  size_t y_diff = abs(y_new - y_old);
+  return x_diff == y_diff;
+}
+vector<tuple<size_t, size_t>> Bishop::Path(const size_t x_old,
+                                           const size_t y_old,
+                                           const size_t x_new,
+                                           const size_t y_new) const {
+  assert(CanMove(x_old, y_old, x_new, y_new));
+  vector<tuple<size_t, size_t>> path;
+  // A bishop's path consists of all squares along the diagonal.
+  int xf = 1;
+  int yf = 1;
+  if (x_new - x_old < 0) {
+    xf = -1;
+  }
+  if (y_new - y_old < 0) {
+    yf = -1;
+  }
+  int y = y_old;
+  for (int i = x_old + 1; i != x_new; i += xf) {
+    path.push_back(make_tuple(i, y));
+    y += yf;
+  }
+  return path;
+}
+
 }  // namespace piece

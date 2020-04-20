@@ -65,12 +65,25 @@ class Knight : public Piece {
   // Knight override of the CanMove piece method.
   bool CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
                const size_t y_new) const override;
-  //Knight override of the Path piece method.
+  // Knight override of the Path piece method.
   vector<tuple<size_t, size_t>> Path(const size_t x_old, const size_t y_old,
                                      const size_t x_new,
                                      const size_t y_new) const override;
 };
 
+// Class representing a bishop object.
+class Bishop : public Piece {
+ public:
+  // Bishop constructor.
+  Bishop(const Color c);
+  // Bishop override of the CanMove piece method.
+  bool CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
+               const size_t y_new) const override;
+  // Bishop override of the Path piece method.
+  vector<tuple<size_t, size_t>> Path(const size_t x_old, const size_t y_old,
+                                     const size_t x_new,
+                                     const size_t y_new) const override;
+};
 
 }  // namespace piece
 
