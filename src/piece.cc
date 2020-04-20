@@ -118,4 +118,31 @@ vector<tuple<size_t, size_t>> Bishop::Path(const size_t x_old,
   return path;
 }
 
+Rook::Rook(const Color c) : Piece(PieceType::kRook, c) {}
+bool Rook::CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
+                   const size_t y_new) const {
+  int x_diff = x_new - x_old;
+  int y_diff = y_new - y_old;
+  // A valid rook move must be along a rank or file, so x_old == x_new or
+  // y_new == y_old (but not both).
+  return (x_diff == 0 != y_diff == 0);
+}
+vector<tuple<size_t, size_t>> Rook::Path(const size_t x_old, const size_t y_old,
+                                         const size_t x_new,
+                                         const size_t y_new) const {
+  assert(CanMove(x_old, y_old, x_new, y_new));
+  vector<tuple<size_t, size_t>> path;
+  // The rook's path consists of every position along the rank or file.
+  if (x_old == x_new) {
+    for (int i = min(y_new, y_old) + 1; i <= max(y_new, y_old); i++) {
+      path.push_back(make_tuple(x_new, i));
+    }
+  } else {
+    for (int i = min(x_new, x_old) + 1; i <= max(x_new, x_old); i++) {
+      path.push_back(make_tuple(i, y_new));
+    }
+  }
+  return path;
+}
+
 }  // namespace piece

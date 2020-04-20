@@ -85,6 +85,20 @@ class Bishop : public Piece {
                                      const size_t y_new) const override;
 };
 
+class Rook : public Piece {
+ public:
+  // Rook override of the CanMove piece method.
+  bool CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
+               const size_t y_new) const override;
+  // Rook override of the piece Path method.
+  vector<tuple<size_t, size_t>> Path(const size_t x_old, const size_t y_old,
+                                     const size_t x_new,
+                                     const size_t y_new) const override;
+  // Rook constructor.
+  Rook(const Color c);
+};
+
+
 }  // namespace piece
 
 #endif  // FINALPROJECT_PIECE_H
