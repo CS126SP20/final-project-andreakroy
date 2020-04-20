@@ -1,9 +1,10 @@
+
 // Copyright (c) 2020 [Your Name]. All rights reserved.
 
 #include <cinder/app/App.h>
 #include <cinder/app/RendererGl.h>
 
-#include "chess/game.h"
+#include "my_app.h"
 
 
 using cinder::app::App;
@@ -20,15 +21,11 @@ void SetUp(App::Settings* settings) {
   settings->setWindowSize(kWidth, kHeight);
   settings->setTitle("My CS 126 Application");
 }
-
 }  // namespace myapp
 
-int main() {
-    game::Game g;
-    g.Run();
-}
 
 // This is a macro that runs the application.
-/*CINDER_APP(myapp::MyApp,
+CINDER_APP(myapp::MyApp,
            RendererGl(RendererGl::Options().msaa(myapp::kSamples)),
-           myapp::SetUp)*/
+           myapp::SetUp)
+

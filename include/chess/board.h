@@ -6,6 +6,7 @@
 #define FINALPROJECT_BOARD_H
 
 #include <chess/piece.h>
+#include <cinder/app/App.h>
 #include <cstddef>
 
 namespace board {
@@ -14,6 +15,9 @@ using piece::Piece;
 using std::vector;
 // The size of one dimension of a chess board.
 const size_t kSize = 8;
+const size_t kSquareSize = 100;
+const cinder::Color green = {0, 1.0, 0};
+const cinder::Color white = cinder::Color::white();
 
 class Board;
 
@@ -46,6 +50,10 @@ class Square {
   // Integer from 0 through 7 representing the y coordinate on a chess board
   // if viewed as a set of Cartesian coordinates.
   size_t y_;
+  // Rectf holding the square's physical location on the board
+  cinder::Rectf loc_;
+  // Color representing the color of the square (green or white)
+  cinder::Color sq_color_;
   // Returns whether or not there is a piece at this square.
   auto IsEmpty() const -> bool;
 };

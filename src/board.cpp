@@ -3,15 +3,16 @@
 #include <assert.h>
 #include <chess/board.h>
 #include <chess/piece.h>
+
 #include <ostream>
 
-using piece::Piece;
-using piece::Pawn;
-using piece::Knight;
-using piece::Rook;
 using piece::Bishop;
 using piece::King;
+using piece::Knight;
+using piece::Pawn;
+using piece::Piece;
 using piece::Queen;
+using piece::Rook;
 using std::get;
 
 namespace board {
@@ -20,15 +21,24 @@ Square::Square(const size_t x, const size_t y) {
   assert(x < kSize && y < kSize);
   x_ = x;
   y_ = y;
+  if ((x + y) % 2 == 0) {
+    sq_color_ = white;
+  } else {
+    sq_color_ = green;
+  }
+  loc_ = {static_cast<float>(x * kSquareSize),
+          static_cast<float>(y * kSquareSize),
+          static_cast<float>((x + 1) * kSquareSize),
+          static_cast<float>((y + 1) * kSquareSize)};
   piece_ = nullptr;
 }
-Square::~Square() {
-  delete piece_;
-}
+Square::~Square() { delete piece_; }
 
 Square::Square(const Square& other) {
   x_ = other.x_;
   y_ = other.y_;
+  loc_ = other.loc_;
+  sq_color_ = other.sq_color_;
   if (other.piece_ == nullptr) {
     piece_ = nullptr;
   } else {
@@ -61,6 +71,8 @@ Square& Square::operator=(const Square& other) {
   }
   x_ = other.x_;
   y_ = other.y_;
+  sq_color_ = other.sq_color_;
+  loc_ = other.loc_;
   delete piece_;
   if (other.piece_ == nullptr) {
     piece_ = nullptr;
@@ -92,12 +104,21 @@ Square::Square(size_t x, size_t y, Piece* p) {
   assert(x < kSize && y < kSize);
   x_ = x;
   y_ = y;
+  if ((x + y) % 2 == 0) {
+    sq_color_ = white;
+  } else {
+    sq_color_ = green;
+  }
+  loc_ = {static_cast<float>(x * kSquareSize),
+          static_cast<float>(y * kSquareSize),
+          static_cast<float>((x + 1) * kSquareSize),
+          static_cast<float>((y + 1) * kSquareSize)};
   piece_ = p;
 }
 
 Board::Board() {
   piece::Color c = piece::Color::kWhite;
-  //Initialize white back row (0)
+  // Initialize white back row (0)
   size_t row = 0;
   grid_[0] = new Square(0, row, new piece::Rook(c));
   grid_[1] = new Square(1, row, new piece::Knight(c));
@@ -107,18 +128,18 @@ Board::Board() {
   grid_[5] = new Square(5, row, new piece::Bishop(c));
   grid_[6] = new Square(6, row, new piece::Knight(c));
   grid_[7] = new Square(7, row, new piece::Rook(c));
-  //Initialize white pawn row (1)
+  // Initialize white pawn row (1)
   row = 1;
   for (int i = 0; i < kSize; i++) {
     grid_[row * kSize + i] = new Square(i, row, new piece::Pawn(c));
   }
-  //Initialize all middle empty rows (2 - 5 inclusive)
+  // Initialize all middle empty rows (2 - 5 inclusive)
   for (int i = 2; i <= 5; i++) {
     for (int j = 0; j < kSize; j++) {
       grid_[i * kSize + j] = new Square(j, i);
     }
   }
-  //Initialize black back row (7)
+  // Initialize black back row (7)
   c = piece::Color::kBlack;
   row = 7;
   grid_[0 + kSize * row] = new Square(0, row, new piece::Rook(c));

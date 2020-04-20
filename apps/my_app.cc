@@ -3,20 +3,37 @@
 #include "my_app.h"
 
 #include <cinder/app/App.h>
-
+#include <cinder/gl/draw.h>
+#include "cinder/gl/gl.h"
 
 namespace myapp {
 
-using cinder::app::KeyEvent;
+using cinder::app::MouseEvent;
+using cinder::Rectf;
+using board::kSquareSize;
 
 MyApp::MyApp() { }
 
-void MyApp::setup() { }
+void MyApp::setup() {
+
+}
 
 void MyApp::update() { }
 
-void MyApp::draw() { }
+void MyApp::draw() {
+  DrawBoard();
+}
 
-void MyApp::keyDown(KeyEvent event) { }
+void MyApp::mouseDrag(MouseEvent event) {
+  std::cout << event.getX();
+}
 
+void MyApp::DrawBoard() {
+  for (size_t j = 0; j < board::kSize; j++) {
+    for (size_t i = 0; i < board::kSize; i++) {
+      cinder::gl::color(game_.board_->At(i, j)->sq_color_);
+      cinder::gl::drawSolidRect(game_.board_->At(i, j)->loc_);
+    }
+  }
+}
 }  // namespace myapp
