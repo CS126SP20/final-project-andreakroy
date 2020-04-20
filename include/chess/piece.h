@@ -57,6 +57,21 @@ class Pawn : public Piece {
   explicit Pawn(const Color c);
 };
 
+// Class representing a knight object.
+class Knight : public Piece {
+ public:
+  // Knight constructor.
+  explicit Knight(Color c);
+  // Knight override of the CanMove piece method.
+  bool CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
+               const size_t y_new) const override;
+  //Knight override of the Path piece method.
+  vector<tuple<size_t, size_t>> Path(const size_t x_old, const size_t y_old,
+                                     const size_t x_new,
+                                     const size_t y_new) const override;
+};
+
+
 }  // namespace piece
 
 #endif  // FINALPROJECT_PIECE_H

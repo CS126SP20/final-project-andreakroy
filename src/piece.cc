@@ -3,9 +3,12 @@
 #include <cassert>
 #include <chess/piece.h>
 
-using std::make_tuple;
-
 namespace piece {
+
+using std::make_tuple;
+using std::max;
+using std::min;
+
 Piece::Piece(const PieceType t, const Color c) : type_(t), color_(c) {}
 
 Pawn::Pawn(const Color c) : Piece(PieceType::kPawn, c) {}
@@ -59,6 +62,27 @@ vector<tuple<size_t, size_t>> Pawn::Path(const size_t x_old, const size_t y_old,
   for (int i = y_old + factor; i <= y_new; i += factor) {
     path.emplace_back(make_tuple(x_new, i));
   }
+  return path;
+}
+
+Knight::Knight(const Color c) : Piece(PieceType::kKnight, c) {}
+bool Knight::CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
+                     const size_t y_new) const {
+  // A knight geometrically moves exactly two squares in one direction and
+  // one square in the other.
+  size_t x_diff = abs(x_new - x_old);
+  size_t y_diff = abs(y_new - y_old);
+  return (max(x_diff, y_diff) == 2 && min(y_diff, x_diff) == 1);
+}
+vector<tuple<size_t, size_t>> Knight::Path(const size_t x_old,
+                                           const size_t y_old,
+                                           const size_t x_new,
+                                           const size_t y_new) const {
+  assert(CanMove(x_old, y_old, x_new, y_new));
+  // A knight has a path consisting of its destination b/c it can jump over
+  // anything.
+  vector<tuple<size_t, size_t>> path;
+  path.emplace_back(x_new, y_new);
   return path;
 }
 
