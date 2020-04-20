@@ -1,11 +1,9 @@
 // Copyright (c) 2020 [Your Name]. All rights reserved.
 
-#include <cassert>
+#include <assert.h>
 #include <chess/board.h>
 #include <chess/piece.h>
 #include <ostream>
-
-namespace board {
 
 using piece::Piece;
 using piece::Pawn;
@@ -16,13 +14,17 @@ using piece::King;
 using piece::Queen;
 using std::get;
 
+namespace board {
+
 Square::Square(const size_t x, const size_t y) {
   assert(x < kSize && y < kSize);
   x_ = x;
   y_ = y;
   piece_ = nullptr;
 }
-Square::~Square() { delete piece_; }
+Square::~Square() {
+  delete piece_;
+}
 
 Square::Square(const Square& other) {
   x_ = other.x_;

@@ -43,14 +43,35 @@ Move Player::PlayMove(const Square *from, const Square *to, Game* game) {
   }
 }
 
-Game::Game() : p1_(Player(piece::Color::kWhite, nullptr)),
-               p2_(Player(piece::Color::kBlack, nullptr)) {
-  board_ = Board();
-  p1_.kingSquare_ = board_.At(4, 0);
-  p2_.kingSquare_ = board_.At(7, 4);
+Game::Game() {
+  p1_ = new Player(piece::Color::kWhite, nullptr);
+  p2_ = new Player(piece::Color::kBlack, nullptr);
+  board_ = new Board();
+  p1_->kingSquare_ = board_->At(4, 0);
+  p2_->kingSquare_ = board_->At(7, 4);
   moves_ = vector<Move>();
 }
 
+Game::~Game() {
+  delete p1_;
+  delete p2_;
+  delete board_;
+}
+
+Game::Game(const Game &other) {
+  p1_ = new Player(*other.p1_);
+  p2_ = new Player(*other.p2_);
+  board_ = new Board(*other.board_);
+}
+
+auto Game::operator=(const Game &other) -> Game & {
+  delete p1_;
+  delete p2_;
+  delete board_;
+  p1_ = new Player(*other.p1_);
+  p2_ = new Player(*other.p2_);
+  board_ = new Board(*other.board_);
+}
 
 bool Game::CanMove(const Square* from, const Square* to, Player* p) const {
   assert(!from->IsEmpty());
@@ -108,18 +129,18 @@ bool Game::PlayTurn(const Move m) {
   if (m.state_ == MoveState::kSuccess) {
     if (m.to_->piece_ != nullptr) {
       if (m.player_->color_ == piece::Color::kWhite) {
-        p2_.numPieces_--;
+        p2_->numPieces_--;
       } else {
-        p1_.numPieces_--;
+        p1_->numPieces_--;
       }
     }
     if (m.from_->piece_->type_ == piece::PieceType::kKing) {
       if (m.player_->color_ == piece::Color::kWhite) {
-        p1_.kingSquare_ == m.to_;
-        p1_.HasKingRookMoved_ = true;
+        p1_->kingSquare_ = m.to_;
+        p1_->HasKingRookMoved_ = true;
       } else {
-        p2_.kingSquare_ == m.to_;
-        p2_.HasKingRookMoved_ = true;
+        p2_->kingSquare_ = m.to_;
+        p2_->HasKingRookMoved_ = true;
       }
     }
     if (m.from_->piece_->type_ == piece::PieceType::kRook) {
@@ -129,9 +150,9 @@ bool Game::PlayTurn(const Move m) {
         m.player_->HasKingRookMoved_ = true;
       }
     }
-    board_.Set(m.to_, m.from_->piece_);
-    board_.Set(m.from_, nullptr);
-    moves_.push_back(m);
+    board_->Set(m.to_, m.from_->piece_);
+    board_->Set(m.from_, nullptr);
+    moves_.emplace_back(m);
     return true;
   }
   return false;
@@ -142,7 +163,7 @@ bool Game::CheckPath(const Square* from, const Square* to) const {
   assert(!from->IsEmpty());
   for (tuple<size_t, size_t> it : from->piece_->Path(from->x_, from->y_,
                                                     to->x_, to->y_)) {
-    const Square* s = board_.At(get<0>(it), get<1>(it));
+    const Square* s = board_->At(get<0>(it), get<1>(it));
     if (s->IsEmpty()) {
       continue;
     }
@@ -155,7 +176,7 @@ bool Game::CheckPath(const Square* from, const Square* to) const {
 bool Game::WouldKingBeInCheck(const Square* at, piece::Color c) const {
   for (int j = board::kSize - 1; j >= 0; j--) {
     for (int i = 0; i < board::kSize; i++) {
-      const Square* s = board_.At(i, j);
+      const Square* s = board_->At(i, j);
       if (s->IsEmpty() || s->piece_->color_ == c) {
         continue;
       }
@@ -177,8 +198,8 @@ vector<const Square*> Game::GetAllPossibleMoves(const Square* s, Player* p)
   assert(s->piece_->color_ == p->color_);
   for (size_t j = 0; j < board::kSize; j++) {
     for (size_t i = 0; i < board::kSize; i++) {
-      if (CanMove(board_.At(s->x_, s->y_), board_.At(i, j), p)) {
-        moves.push_back(board_.At(i, j));
+      if (CanMove(board_->At(s->x_, s->y_), board_->At(i, j), p)) {
+        moves.push_back(board_->At(i, j));
       }
     }
   }
@@ -186,13 +207,25 @@ vector<const Square*> Game::GetAllPossibleMoves(const Square* s, Player* p)
 }
 
 GameState Game::Run() {
-  Player* p = &p1_;
-  PlayTurn(p1_.PlayMove(board_.At(4, 1), board_.At(4, 3), this));
-  PlayTurn(p2_.PlayMove(board_.At(4, 6), board_.At(4, 4), this));
-  PlayTurn(p1_.PlayMove(board_.At(1, 0), board_.At(2, 2), this));
-
+  PlayTurn(p1_->PlayMove(board_->At(4, 1), board_->At(4, 3), this));
+  PlayTurn(p2_->PlayMove(board_->At(4, 6), board_->At(4, 4), this));
+  PlayTurn(p1_->PlayMove(board_->At(1, 0), board_->At(2, 2), this));
+  std::cout << *board_;
 }
 GameState Game::EvaluateBoard() const {
+  if (GetAllPossibleMoves(p1_->kingSquare_, p1_).empty()) {
+    if (p1_->IsKingInCheck_) {
+      return GameState::kP2Win;
+    } else {
+      return GameState::kDraw;
+    }
+  } else if (GetAllPossibleMoves(p2_->kingSquare_, p2_).empty()) {
+    if (p2_->IsKingInCheck_) {
+      return GameState::kP1Win;
+    } else {
+      return GameState::kDraw;
+    }
+  }
   return GameState::kIP;
 }
 
@@ -205,7 +238,7 @@ bool Game::CanCastle(const Player* p, const Square* s) const {
     kingSide = true;
   }
   size_t row;
-  if (p = &p1_) {
+  if (p = p1_) {
     //If the player is white make sure castling on the back row.
     assert(s->y_ == 0);
     row = 0;
@@ -231,7 +264,7 @@ bool Game::CanCastle(const Player* p, const Square* s) const {
     //Look at every square between the start and end square to see if the
     // king would be in check.
     for (int x_pos = p->kingSquare_->x_ + 1; x_pos <= s->x_; x_pos ++) {
-      const Square* intermediate = board_.At(x_pos, s->y_);
+      const Square* intermediate = board_->At(x_pos, s->y_);
       if (!intermediate->IsEmpty()) {
         //Can't castle if there are pieces at intermediate squares.
         return false;

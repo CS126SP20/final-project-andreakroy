@@ -3,7 +3,7 @@
 #include <cinder/app/App.h>
 #include <cinder/app/RendererGl.h>
 
-#include "my_app.h"
+#include "chess/game.h"
 
 
 using cinder::app::App;
@@ -23,8 +23,12 @@ void SetUp(App::Settings* settings) {
 
 }  // namespace myapp
 
+int main() {
+    game::Game g;
+    g.Run();
+}
 
 // This is a macro that runs the application.
-CINDER_APP(myapp::MyApp,
+/*CINDER_APP(myapp::MyApp,
            RendererGl(RendererGl::Options().msaa(myapp::kSamples)),
-           myapp::SetUp)
+           myapp::SetUp)*/

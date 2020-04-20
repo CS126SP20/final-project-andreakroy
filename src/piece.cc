@@ -145,7 +145,7 @@ vector<tuple<size_t, size_t>> Rook::Path(const size_t x_old, const size_t y_old,
   }
   return path;
 }
-
+Queen::Queen(const Color c) : Piece(piece::PieceType::kQueen, c){}
 bool Queen::CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
                     const size_t y_new) const {
   size_t x_diff = abs(x_new - x_old);
@@ -154,6 +154,7 @@ bool Queen::CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
   // valid rook move.
   return (x_diff == 0 != y_diff == 0) || x_diff == y_diff;
 }
+
 auto Queen::Path(const size_t x_old, const size_t y_old, const size_t x_new,
                  const size_t y_new) const -> vector<tuple<size_t, size_t>> {
   assert(CanMove(x_old, y_old, x_new, y_new));

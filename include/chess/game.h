@@ -75,18 +75,25 @@ class Game {
  public:
   // Default game constructor.
   Game();
+  //Game Destructor.
+  ~Game();
+  // Game copy constructor.
+  Game(const Game& other);
+  // Game copy assignment operator.
+  auto operator=(const Game& other) -> Game&;
+  //Copy Assignment Operator.
   // A vector of all successful moves in the game thus far.
   vector<Move> moves_;
   // A board object representing the board of the game.
-  Board board_;
+  Board* board_;
   // Player 1 i.e. the white player.
-  Player p1_;
+  Player* p1_;
   // Player 2 i.e. the black player.
-  Player p2_;
+  Player* p2_;
   // Rrturns the current game state of the board.
   auto EvaluateBoard() const -> GameState;
   // Plays the game. Returns the end result as a GameState.
-  GameState Run();
+  auto Run() -> GameState;
   // Takes in a move object for a player Move and returns true and updates
   // the board if the move was successful.
   auto PlayTurn(const Move m) -> bool;
