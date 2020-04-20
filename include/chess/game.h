@@ -90,7 +90,9 @@ class Game {
   Player* p1_;
   // Player 2 i.e. the black player.
   Player* p2_;
-  // Rrturns the current game state of the board.
+  // True when it is player 1's turn , false otherwise.
+  bool IsP1Turn_;
+  // Returns the current game state of the board.
   auto EvaluateBoard() const -> GameState;
   // Plays the game. Returns the end result as a GameState.
   auto Run() -> GameState;
@@ -113,6 +115,8 @@ class Game {
       const -> vector<const Square*>;
   // Returns true if the player can make a castling move to the given square.
   auto CanCastle(const Player* p, const Square* s) const -> bool;
+  // Gets a move from a string
+  auto GetMoveFromStr(std::string str, Player* p) -> Move;
 };
 }  // namespace game
 
