@@ -28,16 +28,16 @@ class Square {
   // Square copy constructor.
   Square(const Square& other);
   // Square copy assignment operator.
-  Square& operator=(const Square& other);
+  auto operator=(const Square& other) -> Square&;
   // Square constructor creating an empty square at position (x, y). An empty
   // square means that the piece field is set to a null ptr.
   Square(const size_t x, const size_t y);
   // Equality comparision operator checking if two squares point to the same
   // location on the chessboard.
-  inline bool operator==(const Square& other) {return x_ == other.x_
+  inline auto operator==(const Square& other) -> bool {return x_ == other.x_
                                                        && y_ == other.y_;}
   // Square inequality operator.
-  inline bool operator!=(const Square& other) {return !(*this == other);}
+  inline auto operator!=(const Square& other) -> bool {return !(*this == other);}
   // Piece field holding a pointer to the piece on this square.
   Piece* piece_;
   // Integer from 0 through 7 representing the x coordinate on a chess board
@@ -47,7 +47,20 @@ class Square {
   // if viewed as a set of Cartesian coordinates.
   size_t y_;
   // Returns whether or not there is a piece at this square.
-  bool IsEmpty() const;
+  auto IsEmpty() const -> bool;
+};
+
+class Board {
+ private:
+  Square* grid_[kSize * kSize];
+ public:
+  Board();
+  ~Board();
+  Board(const Board& other);
+  auto operator=(const Board& other) -> Board&;
+  auto At(const size_t x, const size_t y) const -> const Square*;
+  void Set(const Square* at, Piece* p);
+  friend auto operator << (std::ostream& out, const Board& b) -> std::ostream&;
 };
 }   // namespace board
 
