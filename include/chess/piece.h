@@ -108,6 +108,17 @@ class Queen : public Piece {
   explicit Queen(const Color c);
 };
 
+class King : public Piece {
+ public:
+  // King override of the Piece CanMove method.
+  auto CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
+               const size_t y_new) const -> bool override;
+  // King override of the Piece Path method.
+  auto Path(const size_t x_old, const size_t y_old, const size_t x_new,
+            const size_t y_new) const -> vector<tuple<size_t, size_t>> override;
+  // King Constructor.
+  explicit King(const Color c);
+};
 }  // namespace piece
 
 #endif  // FINALPROJECT_PIECE_H

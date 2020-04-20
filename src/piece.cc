@@ -176,4 +176,21 @@ auto Queen::Path(const size_t x_old, const size_t y_old, const size_t x_new,
     yf = -1;
   }
 }
+
+King::King(const Color c) : Piece(PieceType::kKing, c) {}
+bool King::CanMove(size_t x_old, size_t y_old, size_t x_new,
+                   size_t y_new) const {
+  // Returns true if the king makes a legal move that is not castling.
+  return (abs(x_new - x_old) <= 1 && abs(y_old - y_new) <= 1);
+}
+
+vector<tuple<size_t, size_t>> King::Path(size_t x_old, size_t y_old,
+                                         size_t x_new, size_t y_new) const {
+  assert(CanMove(x_old, y_old, x_new, y_new));
+  // This method is useless, because castling needs to be checked against a
+  // board anyway.
+  vector<tuple<size_t, size_t>> path;
+  path.emplace_back(make_tuple(x_new, y_new));
+  return path;
+}
 }  // namespace piece
