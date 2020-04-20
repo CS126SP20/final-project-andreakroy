@@ -1,4 +1,4 @@
-// Copyright (c) 2020 CS126SP20. All rights reserved.
+// Copyright (c) 2020 Andrea Roy. All rights reserved.
 
 #define CATCH_CONFIG_MAIN
 
