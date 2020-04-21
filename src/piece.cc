@@ -1,7 +1,7 @@
 // Copyright (c) 2020 Andrea Roy. All rights reserved.
 
 #include <chess/piece.h>
-
+#include <cinder/app/App.h>
 #include <cassert>
 
 namespace piece {
@@ -10,8 +10,8 @@ using std::make_tuple;
 using std::max;
 using std::min;
 
-Piece::Piece(const PieceType t, const Color c) : type_(t), color_(c) {}
-
+Piece::Piece(const PieceType t, const Color c) : type_(t), color_(c), img_
+                                                 (nullptr) {};
 Pawn::Pawn(const Color c) : Piece(PieceType::kPawn, c) {}
 auto Pawn::CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
                    const size_t y_new) const -> bool {

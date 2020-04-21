@@ -8,6 +8,8 @@
 #include <cstddef>
 #include <tuple>
 #include <vector>
+#include "cinder/ImageIo.h"
+#include "cinder/gl/Texture.h"
 
 namespace piece {
 
@@ -26,6 +28,8 @@ class Piece {
   Piece(const PieceType t, const Color c);
   // The piece type.
   const PieceType type_;
+  // Cinder picture image object;
+  const cinder::gl::Texture* img_;
   // Returns whether or not a piece could make a move from (x_old, y_old) to
   // (x_new, y_new). This method only checks the geometric  plausibility of
   // such a move and does not account for factors such as pieces being in the

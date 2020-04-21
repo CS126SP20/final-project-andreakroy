@@ -5,6 +5,9 @@
 #include <cinder/app/App.h>
 #include <cinder/gl/draw.h>
 #include "cinder/gl/gl.h"
+#include <chess/board.h>
+#include "cinder/ImageIo.h"
+#include "cinder/gl/Texture.h"
 
 namespace myapp {
 

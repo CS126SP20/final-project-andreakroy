@@ -4,9 +4,7 @@
 #define FINALPROJECT_APPS_MYAPP_H_
 
 #include <cinder/app/App.h>
-#include <chess/board.h>
 #include <chess/game.h>
-#include <list>
 
 namespace myapp {
 

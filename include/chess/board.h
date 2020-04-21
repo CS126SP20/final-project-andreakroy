@@ -16,7 +16,7 @@ using std::vector;
 // The size of one dimension of a chess board.
 const size_t kSize = 8;
 const size_t kSquareSize = 100;
-const cinder::Color green = {0, 1.0, 0};
+const cinder::Color green = {.1843, .5882, .1568};
 const cinder::Color white = cinder::Color::white();
 
 class Board;
