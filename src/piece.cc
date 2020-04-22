@@ -10,9 +10,15 @@ using std::make_tuple;
 using std::max;
 using std::min;
 
-Piece::Piece(const PieceType t, const Color c) : type_(t), color_(c), img_
-                                                 (nullptr) {};
-Pawn::Pawn(const Color c) : Piece(PieceType::kPawn, c) {}
+Piece::Piece(const PieceType t, const Color c) : type_(t), color_(c), img_path_
+                                                 ("") {}
+Pawn::Pawn(const Color c) : Piece(PieceType::kPawn, c) {
+  if (color_ == Color::kBlack) {
+    img_path_ = "pieces/bp.png";
+  } else {
+    img_path_ = "pieces/wp.png";
+  }
+}
 auto Pawn::CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
                    const size_t y_new) const -> bool {
   int x_diff = x_new - x_old;
@@ -66,7 +72,13 @@ vector<tuple<size_t, size_t>> Pawn::Path(const size_t x_old, const size_t y_old,
   return path;
 }
 
-Knight::Knight(const Color c) : Piece(PieceType::kKnight, c) {}
+Knight::Knight(const Color c) : Piece(PieceType::kKnight, c) {
+  if (color_ == Color::kBlack) {
+    img_path_ = "pieces/bn.png";
+  } else {
+    img_path_ = "pieces/wn.png";
+  }
+}
 bool Knight::CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
                      const size_t y_new) const {
   // A knight geometrically moves exactly two squares in one direction and
@@ -87,7 +99,14 @@ vector<tuple<size_t, size_t>> Knight::Path(const size_t x_old,
   return path;
 }
 
-Bishop::Bishop(const Color c) : Piece(PieceType::kBishop, c) {}
+Bishop::Bishop(const Color c) : Piece(PieceType::kBishop, c) {
+    if (color_ == Color::kBlack) {
+      img_path_ = "pieces/bb.png";
+    } else {
+      img_path_ = "pieces/wb.png";
+    }
+}
+
 bool Bishop::CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
                      const size_t y_new) const {
   // A bishop must move exactly the same number of squares horizontally as
@@ -119,7 +138,13 @@ vector<tuple<size_t, size_t>> Bishop::Path(const size_t x_old,
   return path;
 }
 
-Rook::Rook(const Color c) : Piece(PieceType::kRook, c) {}
+Rook::Rook(const Color c) : Piece(PieceType::kRook, c) {
+  if (color_ == Color::kBlack) {
+    img_path_ = "pieces/br.png";
+  } else {
+    img_path_ = "pieces/wr.png";
+  }
+}
 bool Rook::CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
                    const size_t y_new) const {
   int x_diff = x_new - x_old;
@@ -145,7 +170,13 @@ vector<tuple<size_t, size_t>> Rook::Path(const size_t x_old, const size_t y_old,
   }
   return path;
 }
-Queen::Queen(const Color c) : Piece(piece::PieceType::kQueen, c){}
+Queen::Queen(const Color c) : Piece(piece::PieceType::kQueen, c){
+  if (color_ == Color::kBlack) {
+    img_path_ = "pieces/bq.png";
+  } else {
+    img_path_ = "pieces/wq.png";
+  }
+}
 bool Queen::CanMove(const size_t x_old, const size_t y_old, const size_t x_new,
                     const size_t y_new) const {
   size_t x_diff = abs(x_new - x_old);
@@ -178,7 +209,13 @@ auto Queen::Path(const size_t x_old, const size_t y_old, const size_t x_new,
   }
 }
 
-King::King(const Color c) : Piece(PieceType::kKing, c) {}
+King::King(const Color c) : Piece(PieceType::kKing, c) {
+  if (color_ == Color::kBlack) {
+    img_path_ = "pieces/bk.png";
+  } else {
+    img_path_ = "pieces/wk.png";
+  }
+}
 bool King::CanMove(size_t x_old, size_t y_old, size_t x_new,
                    size_t y_new) const {
   // Returns true if the king makes a legal move that is not castling.
