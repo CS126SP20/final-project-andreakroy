@@ -6,6 +6,10 @@ get_filename_component(CINDER_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../" ABSOL
 include("${CINDER_PATH}/proj/cmake/modules/cinderMakeApp.cmake")
 include("${FinalProject_SOURCE_DIR}/cmake/make_cinder_library.cmake")
 
+file(GLOB SOURCE_LIST CONFIGURE_DEPENDS
+        "${FinalProject_SOURCE_DIR}/include/chess/*.h"
+        "${FinalProject_SOURCE_DIR}/include/chess/*.hpp")
+
 
 file(GLOB SOURCE_LIST CONFIGURE_DEPENDS
         "${FinalProject_SOURCE_DIR}/src/*.h"
@@ -26,6 +30,8 @@ ci_make_library(
 # All users of this library will need at least C++14
 target_compile_features(mylibrary PUBLIC cxx_std_14)
 
+target_link_libraries(mylibrary sqlite-modern-cpp sqlite3)
+
 set_property(TARGET mylibrary PROPERTY
         MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
@@ -45,7 +51,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"
             -pedantic-errors)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     cmake_policy(SET CMP0091 NEW)
-    target_compile_options(mylibrary PRIVATE
+    target_compile_options(chess PRIVATE
             /W3)
 endif ()
 

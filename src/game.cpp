@@ -43,13 +43,14 @@ Move Player::PlayMove(const Square *from, const Square *to, Game* game) {
   }
 }
 
-Game::Game() {
+Game::Game(const int id) {
   p1_ = new Player(piece::Color::kWhite, nullptr);
   p2_ = new Player(piece::Color::kBlack, nullptr);
   board_ = new Board();
   p1_->kingSquare_ = board_->At(4, 0);
   p2_->kingSquare_ = board_->At(7, 4);
   moves_ = vector<Move>();
+  id_ = id;
 }
 
 Game::~Game() {
@@ -62,6 +63,7 @@ Game::Game(const Game &other) {
   p1_ = new Player(*other.p1_);
   p2_ = new Player(*other.p2_);
   board_ = new Board(*other.board_);
+  id_ = other.id_;
 }
 
 auto Game::operator=(const Game &other) -> Game & {
@@ -71,6 +73,7 @@ auto Game::operator=(const Game &other) -> Game & {
   p1_ = new Player(*other.p1_);
   p2_ = new Player(*other.p2_);
   board_ = new Board(*other.board_);
+  id_ = other.id_;
 }
 
 bool Game::CanMove(const Square* from, const Square* to, Player* p) const {

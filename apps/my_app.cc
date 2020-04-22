@@ -2,14 +2,15 @@
 
 #include "my_app.h"
 
-#include <chess/board.h>
 #include <cinder/app/App.h>
 #include <cinder/gl/draw.h>
 
+#include "../include/chess/board.h"
+#include "../include/chess/game.h"
 #include "cinder/ImageIo.h"
+#include "cinder/audio/audio.h"
 #include "cinder/gl/Texture.h"
 #include "cinder/gl/gl.h"
-#include "cinder/audio/audio.h"
 
 namespace myapp {
 
@@ -19,7 +20,10 @@ using cinder::app::MouseEvent;
 using cinder::gl::Texture;
 
 ci::audio::VoiceRef err_sound;
-MyApp::MyApp() {}
+MyApp::MyApp()
+    : db_(cinder::app::getAssetPath("chess.db")),
+      game_(game::Game(1)) {
+}
 
 void MyApp::setup() {
   ResetMoves();

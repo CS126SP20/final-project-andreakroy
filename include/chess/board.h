@@ -5,9 +5,9 @@
 #ifndef FINALPROJECT_BOARD_H
 #define FINALPROJECT_BOARD_H
 
-#include <chess/piece.h>
 #include <cinder/app/App.h>
 #include <cstddef>
+#include "piece.h"
 
 namespace board {
 

@@ -74,7 +74,7 @@ class Player {
 class Game {
  public:
   // Default game constructor.
-  Game();
+  Game(const int id);
   //Game Destructor.
   ~Game();
   // Game copy constructor.
@@ -90,6 +90,8 @@ class Game {
   Player* p1_;
   // Player 2 i.e. the black player.
   Player* p2_;
+  // GameID
+  int id_;
   // Returns the current game state of the board.
   auto EvaluateBoard() const -> GameState;
   // Takes in a move object for a player Move and returns true and updates
