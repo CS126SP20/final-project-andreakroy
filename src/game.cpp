@@ -161,13 +161,11 @@ bool Game::PlayTurn(const Move m) {
 bool Game::CheckPath(const Square* from, const Square* to) const {
   assert(&from != &to);
   assert(!from->IsEmpty());
+  const Square* s;
   for (tuple<size_t, size_t> it : from->piece_->Path(from->x_, from->y_,
                                                     to->x_, to->y_)) {
-    const Square* s = board_->At(get<0>(it), get<1>(it));
-    if (s->IsEmpty()) {
-      continue;
-    }
-    if (s->piece_ != nullptr && s != to) {
+    s = board_->At(get<0>(it), get<1>(it));
+    if (!s->IsEmpty() && s != to) {
       return false;
     }
   }

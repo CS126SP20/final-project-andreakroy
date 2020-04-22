@@ -9,6 +9,7 @@
 #include "cinder/ImageIo.h"
 #include "cinder/gl/Texture.h"
 #include "cinder/gl/gl.h"
+#include "cinder/audio/audio.h"
 
 namespace myapp {
 
@@ -17,11 +18,15 @@ using cinder::Rectf;
 using cinder::app::MouseEvent;
 using cinder::gl::Texture;
 
+ci::audio::VoiceRef err_sound;
 MyApp::MyApp() {}
 
 void MyApp::setup() {
   ResetMoves();
   turn_ = game_.p1_;
+  cinder::audio::SourceFileRef err = cinder::audio::load(
+        cinder::app::loadAsset("err.mp3"));
+    err_sound = cinder::audio::Voice::create(err);
 }
 
 void MyApp::update() {
@@ -46,7 +51,7 @@ void MyApp::update() {
       turn_ = game_.p1_;
     }
   } else {
-    std::cout << "illegal";
+    err_sound->start();
   }
   ResetMoves();
 }
@@ -58,7 +63,25 @@ void MyApp::draw() {
 void MyApp::mouseDown(MouseEvent event) {
   const board::Square* at = game_.board_->At(floor(event.getX() / kSquareSize),
                                       floor(event.getY() / kSquareSize));
-
+  if (origin_square_) {
+    if (at->piece_ && at->piece_->color_ == turn_->color_) {
+      origin_square_ = at;
+      destination_square_ = nullptr;
+      return;
+    }
+    destination_square_ = at;
+  } else {
+    if (!at->piece_) {
+      ResetMoves();
+      return;
+    }
+    if (at->piece_->color_ == turn_->color_) {
+      origin_square_ = at;
+      destination_square_ = nullptr;
+      return;
+    }
+    ResetMoves();
+  }
   //TODO: Reset origin and destination ptr after a legal/illegal move
   //TODO: Show green if a legal move was played, red otherwise.
 }

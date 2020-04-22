@@ -177,6 +177,7 @@ Board& Board::operator=(const Board& other) {
 }
 
 const Square* Board::At(size_t x, size_t y) const {
+  assert(x < kSize && y < kSize);
   return grid_[kSize * y + x];
 }
 
