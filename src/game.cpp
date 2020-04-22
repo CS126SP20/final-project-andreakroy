@@ -50,7 +50,6 @@ Game::Game() {
   p1_->kingSquare_ = board_->At(4, 0);
   p2_->kingSquare_ = board_->At(7, 4);
   moves_ = vector<Move>();
-  IsP1Turn_ = true;
 }
 
 Game::~Game() {
@@ -63,7 +62,6 @@ Game::Game(const Game &other) {
   p1_ = new Player(*other.p1_);
   p2_ = new Player(*other.p2_);
   board_ = new Board(*other.board_);
-  IsP1Turn_ = other.IsP1Turn_;
 }
 
 auto Game::operator=(const Game &other) -> Game & {
@@ -73,7 +71,6 @@ auto Game::operator=(const Game &other) -> Game & {
   p1_ = new Player(*other.p1_);
   p2_ = new Player(*other.p2_);
   board_ = new Board(*other.board_);
-  IsP1Turn_ = other.IsP1Turn_;
 }
 
 bool Game::CanMove(const Square* from, const Square* to, Player* p) const {
@@ -155,11 +152,6 @@ bool Game::PlayTurn(const Move m) {
     }
     board_->Set(m.to_, m.from_->piece_);
     board_->Set(m.from_, nullptr);
-    if (m.player_ == p1_) {
-      IsP1Turn_ = false;
-    } else {
-      IsP1Turn_ = true;
-    }
     moves_.emplace_back(m);
     return true;
   }
@@ -216,19 +208,6 @@ vector<const Square*> Game::GetAllPossibleMoves(const Square* s, Player* p)
   return moves;
 }
 
-GameState Game::Run() {
-  while (EvaluateBoard() == GameState::kIP) {
-    std::string s;
-    std::cin >> s;
-    if (IsP1Turn_) {
-      PlayTurn(GetMoveFromStr(s, p1_));
-    } else {
-      PlayTurn(GetMoveFromStr(s, p2_));
-    }
-    std::cout << *board_;
-  }
-  return GameState::kIP;
-}
 GameState Game::EvaluateBoard() const {
   if (GetAllPossibleMoves(p1_->kingSquare_, p1_).empty()) {
     if (p1_->IsKingInCheck_) {

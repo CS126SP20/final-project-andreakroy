@@ -19,6 +19,8 @@ class MyApp : public cinder::app::App {
  private:
   game::Game game_;
   const board::Square* origin_square_;
+  const board::Square* destination_square_;
+  game::Player* turn_;
 };
 
 }  // namespace myapp

@@ -90,12 +90,8 @@ class Game {
   Player* p1_;
   // Player 2 i.e. the black player.
   Player* p2_;
-  // True when it is player 1's turn , false otherwise.
-  bool IsP1Turn_;
   // Returns the current game state of the board.
   auto EvaluateBoard() const -> GameState;
-  // Plays the game. Returns the end result as a GameState.
-  auto Run() -> GameState;
   // Takes in a move object for a player Move and returns true and updates
   // the board if the move was successful.
   auto PlayTurn(const Move m) -> bool;
