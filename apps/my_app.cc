@@ -20,22 +20,26 @@ using cinder::gl::Texture;
 MyApp::MyApp() {}
 
 void MyApp::setup() {
-  origin_square_ = nullptr;
-  destination_square_ = nullptr;
+  ResetMoves();
   turn_ = game_.p1_;
 }
 
 void MyApp::update() {
   game::Player* p = game_.p1_;
-  if (turn_ = game_.p2_) {
+  if (turn_ == game_.p2_) {
     p = game_.p2_;
   }
+  // If the destination and origin squares are not selected do nothing
   if (!destination_square_ || !origin_square_) {
     return;
   }
+  // If the player selected the wrong color, do nothing
+  if (origin_square_->piece_->color_ != p->color_) {
+    return;
+  }
+  // If playing the move is successful
   if (game_.PlayTurn(p->PlayMove(origin_square_, destination_square_,
                                  &game_))) {
-    std::cout << "legal";
     if (p == game_.p1_) {
       turn_ = game_.p2_;
     } else {
@@ -44,6 +48,7 @@ void MyApp::update() {
   } else {
     std::cout << "illegal";
   }
+  ResetMoves();
 }
 
 void MyApp::draw() {
@@ -53,17 +58,7 @@ void MyApp::draw() {
 void MyApp::mouseDown(MouseEvent event) {
   const board::Square* at = game_.board_->At(floor(event.getX() / kSquareSize),
                                       floor(event.getY() / kSquareSize));
-  if (!origin_square_) {
-    origin_square_ = at;
-    destination_square_ = nullptr;
-  } else {
-    if (at == origin_square_) {
-      origin_square_ = nullptr;
-      destination_square_ = nullptr;
-    } else {
-      destination_square_ = at;
-    }
-  }
+
   //TODO: Reset origin and destination ptr after a legal/illegal move
   //TODO: Show green if a legal move was played, red otherwise.
 }
@@ -90,5 +85,10 @@ void MyApp::DrawBoard() {
       cinder::gl::draw(ref, s->loc_);
     }
   }
+}
+
+void MyApp::ResetMoves() {
+  origin_square_ = nullptr;
+  destination_square_ = nullptr;
 }
 }  // namespace myapp

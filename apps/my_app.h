@@ -21,6 +21,7 @@ class MyApp : public cinder::app::App {
   const board::Square* origin_square_;
   const board::Square* destination_square_;
   game::Player* turn_;
+  void ResetMoves();
 };
 
 }  // namespace myapp
