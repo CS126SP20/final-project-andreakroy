@@ -76,12 +76,6 @@ add_subdirectory(tests)
 
 ############## Third-party Libraries #####################
 
-# Database library
-FetchContent_Declare(
-        sqlite-modern-cpp
-        GIT_REPOSITORY https://github.com/SqliteModernCpp/sqlite_modern_cpp.git
-        GIT_TAG a0f96c10f04d96ccea1b8a49d5998c96e7887bf4
-)
 
 # Testing library. Header-only.
 FetchContent_Declare(
@@ -90,19 +84,6 @@ FetchContent_Declare(
         GIT_TAG        v2.11.1
 )
 
-FetchContent_Declare(
-        sqlite3
-        GIT_REPOSITORY https://github.com/alex85k/sqlite3-cmake.git
-        GIT_TAG v3.24.0
-)
-
-# Adds sqlite_modern_cpp.
-FetchContent_GetProperties(sqlite-modern-cpp)
-if (NOT sqlite-modern-cpp_POPULATED)
-    FetchContent_Populate(sqlite-modern-cpp)
-    add_library(sqlite-modern-cpp INTERFACE)
-    target_include_directories(sqlite-modern-cpp INTERFACE ${sqlite-modern-cpp_SOURCE_DIR}/hdr)
-endif ()
 
 # Adds catch2 library.
 FetchContent_GetProperties(catch2)
@@ -113,12 +94,20 @@ if(NOT catch2_POPULATED)
     target_include_directories(catch2 INTERFACE ${catch2_SOURCE_DIR}/single_include)
 endif()
 
-# Adds sqlite3
-FetchContent_GetProperties(sqlite3)
-if (NOT sqlite3_POPULATED)
-    FetchContent_Populate(sqlite3)
-    add_subdirectory(${sqlite3_SOURCE_DIR} ${sqlite3_BINARY_DIR})
-    target_include_directories(sqlite3 INTERFACE ${sqlite3_SOURCE_DIR}/src)
-endif ()
+SET(requiredlibs)
 
-# Add more libraries here ...
+FIND_PACKAGE(CURL)
+IF(CURL_FOUND)
+  INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIR})
+  SET(requiredlibs ${requiredlibs} ${CURL_LIBRARIES} )
+ELSE(CURL_FOUND)
+  MESSAGE(FATAL_ERROR "Could not find the CURL library and development files.")
+ENDIF(CURL_FOUND)
+
+FIND_PACKAGE(OpenSSL)
+IF(OPENSSL_FOUND)
+  INCLUDE_DIRECTORIES(${OPENSSL_INCLUDE_DIR})
+  SET(requiredlibs ${requiredlibs} ${OPENSSL_LIBRARIES} crypto) # bugfix, because libcrypto is not found automatically
+ELSE(OPENSSL_FOUND)
+  MESSAGE(FATAL_ERROR "Could not find the OpenSSL library and development files.")
+ENDIF(OPENSSL_FOUND)

@@ -7,6 +7,7 @@
 
 #include "../include/chess/board.h"
 #include "../include/chess/game.h"
+#include <curl/curl.h>
 #include "cinder/ImageIo.h"
 #include "cinder/audio/audio.h"
 #include "cinder/gl/Texture.h"
@@ -20,23 +21,38 @@ using cinder::app::MouseEvent;
 using cinder::gl::Texture;
 
 ci::audio::VoiceRef err_sound;
-MyApp::MyApp()
-    : db_(cinder::app::getAssetPath("chess.db")),
-      game_(game::Game(1)) {
+MyApp::MyApp() :
+      game_(game::Game(3)) {
 }
 
 void MyApp::setup() {
   ResetMoves();
-  turn_ = game_.p1_;
+  turn_ = game_.white_;
   cinder::audio::SourceFileRef err = cinder::audio::load(
         cinder::app::loadAsset("err.mp3"));
     err_sound = cinder::audio::Voice::create(err);
+
+  std::string buffer;
+  CURLcode res;
+  CURL *curl;
+  curl = curl_easy_init();
+  if (curl) {
+    curl_easy_setopt(curl, CURLOPT_URL, "https://www.google.com");
+    res = curl_easy_perform(curl);
+    if (res != CURLE_OK) {
+      std::cout << "err";
+    }
+    curl_easy_cleanup(curl);
+    std::cout << buffer;
+  }
 }
 
 void MyApp::update() {
-  game::Player* p = game_.p1_;
-  if (turn_ == game_.p2_) {
-    p = game_.p2_;
+  game::Player* p = game_.white_;
+  piece::Color prev_move = piece::Color::kBlack;
+  if (turn_ == game_.black_) {
+    p = game_.black_;
+    prev_move = piece::Color::kWhite;
   }
   // If the destination and origin squares are not selected do nothing
   if (!destination_square_ || !origin_square_) {
@@ -46,13 +62,15 @@ void MyApp::update() {
   if (origin_square_->piece_->color_ != p->color_) {
     return;
   }
+
   // If playing the move is successful
-  if (game_.PlayTurn(p->PlayMove(origin_square_, destination_square_,
-                                 &game_))) {
-    if (p == game_.p1_) {
-      turn_ = game_.p2_;
+  auto m = p->PlayMove(origin_square_, destination_square_,
+                                 &game_);
+  if (game_.PlayTurn(m)) {
+    if (p == game_.white_) {
+      turn_ = game_.black_;
     } else {
-      turn_ = game_.p1_;
+      turn_ = game_.white_;
     }
   } else {
     err_sound->start();

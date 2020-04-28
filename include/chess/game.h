@@ -87,11 +87,13 @@ class Game {
   // A board object representing the board of the game.
   Board* board_;
   // Player 1 i.e. the white player.
-  Player* p1_;
+  Player* white_;
   // Player 2 i.e. the black player.
-  Player* p2_;
+  Player* black_;
   // GameID
   int id_;
+  // Current Move number
+  size_t move_number_;
   // Returns the current game state of the board.
   auto EvaluateBoard() const -> GameState;
   // Takes in a move object for a player Move and returns true and updates

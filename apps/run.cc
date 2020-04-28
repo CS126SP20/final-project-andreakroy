@@ -1,5 +1,5 @@
 
-// Copyright (c) 2020 [Your Name]. All rights reserved.
+// Copyright (c) 2020 Andrea Roy. All rights reserved.
 
 #include <cinder/app/App.h>
 #include <cinder/app/RendererGl.h>
@@ -19,7 +19,7 @@ const int kHeight = 800;
 
 void SetUp(App::Settings* settings) {
   settings->setWindowSize(kWidth, kHeight);
-  settings->setTitle("My CS 126 Application");
+  settings->setTitle("Chess Game");
 }
 }  // namespace myapp
 

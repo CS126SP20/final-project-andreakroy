@@ -30,6 +30,9 @@ Player::Player(const piece::Color c, const Square* king) {
 }
 
 Move Player::PlayMove(const Square *from, const Square *to, Game* game) {
+  if (!from || !to || !game) {
+    return {this, nullptr, nullptr, false, MoveState::kIllegal};
+  }
   assert(!from->IsEmpty());
   assert(from->piece_->color_ == color_);
   if (from ->piece_->type_ == piece::PieceType::kKing) {
@@ -44,39 +47,46 @@ Move Player::PlayMove(const Square *from, const Square *to, Game* game) {
 }
 
 Game::Game(const int id) {
-  p1_ = new Player(piece::Color::kWhite, nullptr);
-  p2_ = new Player(piece::Color::kBlack, nullptr);
+  white_ = new Player(piece::Color::kWhite, nullptr);
+  black_ = new Player(piece::Color::kBlack, nullptr);
   board_ = new Board();
-  p1_->kingSquare_ = board_->At(4, 0);
-  p2_->kingSquare_ = board_->At(7, 4);
+  white_->kingSquare_ = board_->At(4, 0);
+  black_->kingSquare_ = board_->At(7, 4);
   moves_ = vector<Move>();
   id_ = id;
+  move_number_ = 0;
 }
 
 Game::~Game() {
-  delete p1_;
-  delete p2_;
+  delete white_;
+  delete black_;
   delete board_;
 }
 
 Game::Game(const Game &other) {
-  p1_ = new Player(*other.p1_);
-  p2_ = new Player(*other.p2_);
+  white_ = new Player(*other.white_);
+  black_ = new Player(*other.black_);
   board_ = new Board(*other.board_);
   id_ = other.id_;
+  move_number_ = other.move_number_;
 }
 
 auto Game::operator=(const Game &other) -> Game & {
-  delete p1_;
-  delete p2_;
+  if (&other == this) {
+    return *this;
+  }
+  delete white_;
+  delete black_;
   delete board_;
-  p1_ = new Player(*other.p1_);
-  p2_ = new Player(*other.p2_);
+  white_ = new Player(*other.white_);
+  black_ = new Player(*other.black_);
   board_ = new Board(*other.board_);
   id_ = other.id_;
+  move_number_ = other.move_number_;
+  return *this;
 }
 
-bool Game::CanMove(const Square* from, const Square* to, Player* p) const {
+auto Game::CanMove(const Square* from, const Square* to, Player* p) const -> bool {
   assert(!from->IsEmpty());
   if (from == to) {
     return false;
@@ -118,8 +128,12 @@ bool Game::CanMove(const Square* from, const Square* to, Player* p) const {
       if (!from->piece_->CanMove(from->x_, from->y_, to->x_, to->y_)) {
         return false;
       }
-      //Can't move horizontally if not capturing a piece
+      // Can't move horizontally if not capturing a piece
       if (from->x_ - to->x_ != 0 && to->IsEmpty()) {
+        return false;
+      }
+      // Can't move straight ahead if there is a piece there
+      if (from->x_ - to->x_ == 0 && !to->IsEmpty()) {
         return false;
       }
       return true;
@@ -128,22 +142,26 @@ bool Game::CanMove(const Square* from, const Square* to, Player* p) const {
   }
 }
 
-bool Game::PlayTurn(const Move m) {
+auto Game::PlayTurn(const Move m) -> bool {
   if (m.state_ == MoveState::kSuccess) {
+    // If the player is player 2, increment the move counter
+    if (m.player_ == white_) {
+      move_number_++;
+    }
     if (m.to_->piece_ != nullptr) {
       if (m.player_->color_ == piece::Color::kWhite) {
-        p2_->numPieces_--;
+        black_->numPieces_--;
       } else {
-        p1_->numPieces_--;
+        white_->numPieces_--;
       }
     }
     if (m.from_->piece_->type_ == piece::PieceType::kKing) {
       if (m.player_->color_ == piece::Color::kWhite) {
-        p1_->kingSquare_ = m.to_;
-        p1_->HasKingRookMoved_ = true;
+        white_->kingSquare_ = m.to_;
+        white_->HasKingRookMoved_ = true;
       } else {
-        p2_->kingSquare_ = m.to_;
-        p2_->HasKingRookMoved_ = true;
+        black_->kingSquare_ = m.to_;
+        black_->HasKingRookMoved_ = true;
       }
     }
     if (m.from_->piece_->type_ == piece::PieceType::kRook) {
@@ -161,7 +179,7 @@ bool Game::PlayTurn(const Move m) {
   return false;
 }
 
-bool Game::CheckPath(const Square* from, const Square* to) const {
+auto Game::CheckPath(const Square* from, const Square* to) const -> bool {
   assert(&from != &to);
   assert(!from->IsEmpty());
   const Square* s;
@@ -174,7 +192,7 @@ bool Game::CheckPath(const Square* from, const Square* to) const {
   }
   return true;
 }
-bool Game::WouldKingBeInCheck(const Square* at, piece::Color c) const {
+auto Game::WouldKingBeInCheck(const Square* at, piece::Color c) const -> bool {
   for (int j = board::kSize - 1; j >= 0; j--) {
     for (int i = 0; i < board::kSize; i++) {
       const Square* s = board_->At(i, j);
@@ -191,8 +209,8 @@ bool Game::WouldKingBeInCheck(const Square* at, piece::Color c) const {
   return false;
 }
 
-vector<const Square*> Game::GetAllPossibleMoves(const Square* s, Player* p)
-    const {
+auto Game::GetAllPossibleMoves(const Square* s, Player* p)
+    const -> vector<const Square*> {
   vector<const Square*> moves;
   assert(s != nullptr);
   if (s->piece_ == nullptr) {
@@ -209,24 +227,24 @@ vector<const Square*> Game::GetAllPossibleMoves(const Square* s, Player* p)
   return moves;
 }
 
-GameState Game::EvaluateBoard() const {
-  if (GetAllPossibleMoves(p1_->kingSquare_, p1_).empty()) {
-    if (p1_->IsKingInCheck_) {
+auto Game::EvaluateBoard() const -> GameState {
+  if (GetAllPossibleMoves(white_->kingSquare_, white_).empty()) {
+    if (white_->IsKingInCheck_) {
       return GameState::kP2Win;
-    } else if (p1_->numPieces_ == 0) {
+    } else if (white_->numPieces_ == 0) {
       return GameState::kDraw;
     }
-  } else if (GetAllPossibleMoves(p2_->kingSquare_, p2_).empty()) {
-    if (p2_->IsKingInCheck_) {
+  } else if (GetAllPossibleMoves(black_->kingSquare_, black_).empty()) {
+    if (black_->IsKingInCheck_) {
       return GameState::kP1Win;
-    } else if (p2_-> numPieces_ == 0) {
+    } else if (black_-> numPieces_ == 0) {
       return GameState::kDraw;
     }
   }
   return GameState::kIP;
 }
 
-bool Game::CanCastle(const Player* p, const Square* s) const {
+auto Game::CanCastle(const Player* p, const Square* s) const -> bool {
   //Check that the square to go to is the correct kingside square(6) or
   // queenside square(6).
   if (s->x_ == 2 || s->x_ == 6) {
@@ -237,7 +255,7 @@ bool Game::CanCastle(const Player* p, const Square* s) const {
     kingSide = true;
   }
   size_t row;
-  if (p = p1_) {
+  if (p == white_) {
     //If the player is white make sure castling on the back row.
     if (s->y_ != 0) {
       return false;

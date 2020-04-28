@@ -15,10 +15,15 @@ namespace piece {
 
 using std::tuple;
 using std::vector;
+enum class Color;
+using std::map;
 
 enum class PieceType { kKing, kQueen, kRook, kPawn, kKnight, kBishop };
 
 enum class Color { kBlack, kWhite };
+
+const map<Color, std::string> color_str_map = {{Color::kBlack, "black"},
+                                               {Color::kWhite, "white"}};
 
 // Abstract Class representing a piece. Each peace has a type and color and
 // implements CanMove and Path.

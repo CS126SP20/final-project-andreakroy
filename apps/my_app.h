@@ -6,7 +6,6 @@
 #include <cinder/app/App.h>
 #include <vector>
 #include "../include/chess/game.h"
-#include "../include/db.h"
 
 namespace myapp {
 
@@ -23,7 +22,6 @@ class MyApp : public cinder::app::App {
   const board::Square* origin_square_;
   const board::Square* destination_square_;
   game::Player* turn_;
-  database::Database db_;
   void ResetMoves();
 };
 
