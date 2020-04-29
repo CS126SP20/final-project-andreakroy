@@ -20,6 +20,7 @@ using board::kSquareSize;
 using cinder::Rectf;
 using cinder::app::MouseEvent;
 using cinder::gl::Texture;
+using nlohmann::json;
 
 ci::audio::VoiceRef err_sound;
 MyApp::MyApp() : game_(game::Game(3)) {
@@ -126,6 +127,11 @@ void MyApp::ResetMoves() {
   destination_square_ = nullptr;
 }
 
+size_t WriteCallBack(void *contents, size_t size, size_t nmemb, void *userp) {
+  ((std::string*)userp)->append((char*)contents, size*nmemb);
+  return size * nmemb;
+}
+
 void MyApp::GetUpdate() {
   std::string base_url = "http://127.0.0.1:5000/moves";
   std::string buffer;
@@ -133,9 +139,12 @@ void MyApp::GetUpdate() {
   CURL *curl;
   curl = curl_easy_init();
   if (curl) {
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
     curl_easy_setopt(curl, CURLOPT_URL,
                      (base_url + "?game_id=" + std::to_string(game_.id_)).c_str
                      ());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallBack);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
     res = curl_easy_perform(curl);
     if (res != CURLE_OK) {
       std::cout << "Could not find game with id: " + std::to_string(game_.id_)
@@ -144,20 +153,22 @@ void MyApp::GetUpdate() {
     }
     curl_easy_cleanup(curl);
     std::cout << buffer;
-    return;
-    /*game::Move to_return;
+    game::Move to_return;
     to_return.player_ = game_.white_;
     if (player_ == game_.white_) {
       to_return.player_ = game_.black_;
     }
-    to_return.from_ = game_.board_->At(buffer.at(0) - '0',
-                                       buffer.at(1) - '0');
+    std::string move = json::parse(buffer)["move"];
+    std::cout << move;
+    to_return.from_ = game_.board_->At(move.at(0) - '0',
+                                       move.at(1) - '0');
 
-    to_return.to_ = game_.board_->At(buffer.at(2) - '0',
-                                       buffer.at(3) - '0');
+    to_return.to_ = game_.board_->At(move.at(2) - '0',
+                                       move.at(3) - '0');
     to_return.state_ = game::MoveState::kSuccess;
     to_return.IsCastling_ = false;
-    game_.moves_.emplace_back(to_return);*/
+    game_.moves_.emplace_back(to_return);
+    return;
   }
   std::cout << "Could not connect to server.";
   std::exit(-1);
