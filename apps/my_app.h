@@ -5,9 +5,10 @@
 
 #include <cinder/app/App.h>
 #include <vector>
-#include "../include/chess/game.h"
+#include "chess/game.h"
 
 namespace myapp {
+
 
 class MyApp : public cinder::app::App {
  public:
@@ -19,10 +20,13 @@ class MyApp : public cinder::app::App {
   void DrawBoard();
  private:
   game::Game game_;
+  const game::Player* player_;
   const board::Square* origin_square_;
   const board::Square* destination_square_;
   game::Player* turn_;
   void ResetMoves();
+  void GetUpdate();
+  void postUpdate(const game::Move move);
 };
 
 }  // namespace myapp

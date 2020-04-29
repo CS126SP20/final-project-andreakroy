@@ -33,6 +33,8 @@ target_compile_features(mylibrary PUBLIC cxx_std_14)
 set_property(TARGET mylibrary PROPERTY
         MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
+target_include_directories(mylibrary PUBLIC ../include)
+
 # Cross-platform compiler lints
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"
         OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

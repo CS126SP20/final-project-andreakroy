@@ -5,13 +5,14 @@
 #include <cinder/app/App.h>
 #include <cinder/gl/draw.h>
 
-#include "../include/chess/board.h"
-#include "../include/chess/game.h"
+#include "chess/board.h"
+#include "chess/game.h"
 #include <curl/curl.h>
 #include "cinder/ImageIo.h"
 #include "cinder/audio/audio.h"
 #include "cinder/gl/Texture.h"
 #include "cinder/gl/gl.h"
+#include <json.hpp>
 
 namespace myapp {
 
@@ -21,33 +22,21 @@ using cinder::app::MouseEvent;
 using cinder::gl::Texture;
 
 ci::audio::VoiceRef err_sound;
-MyApp::MyApp() :
-      game_(game::Game(3)) {
+MyApp::MyApp() : game_(game::Game(3)) {
+  player_ = game_.white_;
+  turn_ = game_.white_;
 }
 
 void MyApp::setup() {
   ResetMoves();
-  turn_ = game_.white_;
   cinder::audio::SourceFileRef err = cinder::audio::load(
         cinder::app::loadAsset("err.mp3"));
     err_sound = cinder::audio::Voice::create(err);
 
-  std::string buffer;
-  CURLcode res;
-  CURL *curl;
-  curl = curl_easy_init();
-  if (curl) {
-    curl_easy_setopt(curl, CURLOPT_URL, "https://www.google.com");
-    res = curl_easy_perform(curl);
-    if (res != CURLE_OK) {
-      std::cout << "err";
-    }
-    curl_easy_cleanup(curl);
-    std::cout << buffer;
-  }
 }
 
 void MyApp::update() {
+  GetUpdate();
   game::Player* p = game_.white_;
   piece::Color prev_move = piece::Color::kBlack;
   if (turn_ == game_.black_) {
@@ -135,5 +124,42 @@ void MyApp::DrawBoard() {
 void MyApp::ResetMoves() {
   origin_square_ = nullptr;
   destination_square_ = nullptr;
+}
+
+void MyApp::GetUpdate() {
+  std::string base_url = "http://127.0.0.1:5000/moves";
+  std::string buffer;
+  CURLcode res;
+  CURL *curl;
+  curl = curl_easy_init();
+  if (curl) {
+    curl_easy_setopt(curl, CURLOPT_URL,
+                     (base_url + "?game_id=" + std::to_string(game_.id_)).c_str
+                     ());
+    res = curl_easy_perform(curl);
+    if (res != CURLE_OK) {
+      std::cout << "Could not find game with id: " + std::to_string(game_.id_)
+                       + " on the server.";
+      std::exit(-1);
+    }
+    curl_easy_cleanup(curl);
+    std::cout << buffer;
+    return;
+    /*game::Move to_return;
+    to_return.player_ = game_.white_;
+    if (player_ == game_.white_) {
+      to_return.player_ = game_.black_;
+    }
+    to_return.from_ = game_.board_->At(buffer.at(0) - '0',
+                                       buffer.at(1) - '0');
+
+    to_return.to_ = game_.board_->At(buffer.at(2) - '0',
+                                       buffer.at(3) - '0');
+    to_return.state_ = game::MoveState::kSuccess;
+    to_return.IsCastling_ = false;
+    game_.moves_.emplace_back(to_return);*/
+  }
+  std::cout << "Could not connect to server.";
+  std::exit(-1);
 }
 }  // namespace myapp
