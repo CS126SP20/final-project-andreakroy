@@ -26,6 +26,7 @@ class MyApp : public cinder::app::App {
   const board::Square* destination_square_;
   game::Player* turn_;
   std::string last_move_str;
+  std::string url_;
   void ResetMoves();
   void GetUpdate();
   void PostUpdate(const game::Move move);

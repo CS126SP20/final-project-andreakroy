@@ -25,6 +25,7 @@ using nlohmann::json;
 
 DECLARE_uint32(game_id);
 DECLARE_string(color);
+DECLARE_string(url);
 
 ci::audio::VoiceRef err_sound;
 
@@ -37,6 +38,10 @@ MyApp::MyApp() : game_(game::Game(FLAGS_game_id)) {
     player_ = nullptr;
   }
   turn_ = game_.white_;
+  url_ = FLAGS_url;
+  if (url_.empty()) {
+    player_ = nullptr;
+  }
 }
 
 void MyApp::setup() {
@@ -47,7 +52,7 @@ void MyApp::setup() {
 }
 
 void MyApp::update() {
-  if (player_ != nullptr) {
+  if (player_ != nullptr && !url_.empty()) {
     GetUpdate();
   }
   game::Player *p = game_.white_;
@@ -71,7 +76,7 @@ void MyApp::update() {
     } else {
       turn_ = game_.white_;
     }
-    if (player_ != nullptr) {
+    if (player_ != nullptr && !url_.empty()) {
       PostUpdate(m);
     }
   } else {
@@ -111,8 +116,6 @@ void MyApp::mouseDown(MouseEvent event) {
       return;
     }
   }
-  // TODO: Reset origin and destination ptr after a legal/illegal move
-  // TODO: Show green if a legal move was played, red otherwise.
 }
 
 void MyApp::DrawBoard() {
@@ -144,13 +147,13 @@ void MyApp::ResetMoves() {
   destination_square_ = nullptr;
 }
 
+// CURL callback function for get request.
 size_t WriteCallBack(void *contents, size_t size, size_t nmemb, void *userp) {
   ((std::string *)userp)->append((char *)contents, size * nmemb);
   return size * nmemb;
 }
 
 void MyApp::GetUpdate() {
-  std::string base_url = "http://127.0.0.1:5000/moves";
   std::string buffer;
   CURLcode res;
   CURL *curl;
@@ -159,9 +162,9 @@ void MyApp::GetUpdate() {
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
     curl_easy_setopt(
         curl, CURLOPT_URL,
-        (base_url + "?game_id=" + std::to_string(game_.id_)).c_str());
+        (url_ + "?game_id=" + std::to_string(game_.id_)).c_str());
     curl_easy_setopt(curl, CURLOPT_URL,
-                     (base_url + "?game_id=" + std::to_string(game_.id_)).c_str
+                     (url_ + "?game_id=" + std::to_string(game_.id_)).c_str
                      ());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallBack);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
@@ -187,7 +190,11 @@ void MyApp::GetUpdate() {
     if (move == last_move_str) {
       return;
     }
-    to_play = game_.GetMoveFromStr(move, player_);
+    game::Player* prev_move = game_.white_;
+    if (player_ == game_.white_) {
+      prev_move = game_.black_;
+    }
+    to_play = game_.GetMoveFromStr(move, prev_move);
     if (to_play.player_->color_ == piece::Color::kWhite) {
       turn_ = game_.black_;
     } else {
@@ -209,8 +216,6 @@ void MyApp::GetUpdate() {
 
 void MyApp::PostUpdate(const game::Move move) {
   assert(move.state_ == game::MoveState::kSuccess);
-  std::string base_url = "http://127.0.0.1:5000/moves";
-  std::cout << base_url;
   std::stringstream move_stream;
   move_stream << move;
   CURLcode res;
@@ -222,7 +227,7 @@ void MyApp::PostUpdate(const game::Move move) {
         "&color=" + piece::color_str_map.at(move.player_->color_) +
         "&move=" + move_stream.str() + "&game_id=" + std::to_string(game_
                                                                          .id_));
-    curl_easy_setopt(curl, CURLOPT_URL, (base_url + post_fields).c_str());
+    curl_easy_setopt(curl, CURLOPT_URL, (url_ + post_fields).c_str());
     curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "");
     curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);

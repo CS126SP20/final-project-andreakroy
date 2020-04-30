@@ -17,10 +17,12 @@ namespace myapp {
 const int kSamples = 8;
 const int kWidth = 800;
 const int kHeight = 800;
+const int kFrameRate = 30;
 
 DEFINE_string(color, "",
               "the color of the player in the game (either white or"
               " black)");
+DEFINE_string(url, "", "the http server url");
 DEFINE_uint32(game_id, 0, "the game id on the server.");
 
 void ParseArgs(std::vector<std::string>* args) {
@@ -42,6 +44,8 @@ void SetUp(App::Settings* settings) {
   ParseArgs(&args);
   settings->setWindowSize(kWidth, kHeight);
   settings->setTitle("Chess Game");
+  settings->setResizable(false);
+  settings->setFrameRate(kFrameRate);
 }
 
 } // namespace myapp
