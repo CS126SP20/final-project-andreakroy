@@ -42,10 +42,13 @@ struct Move {
   // The square to which the piece moved.
   const Square* to_;
   // True if the move was a castling move, false otherwise.
+  size_t number_ = 1;
   bool IsCastling_;
   // Whether the move was successful or illegal.
   MoveState state_;
 };
+
+std::ostream &operator << (std::ostream &os, const Move &move);
 
 // Class representing a player. Each game has two players.
 class Player {
@@ -102,6 +105,8 @@ class Game {
   // Returns true if the player can legally make a move from a square to
   // another square.
   auto CanMove(const Square* from, const Square* to, Player* p) const -> bool;
+  // Gets a move from a string
+  auto GetMoveFromStr(const std::string str, Player* p) -> Move;
  private:
   // Checks whether the piece's path tries to run over an existing piece in a
   // move from a square to another.
@@ -115,8 +120,7 @@ class Game {
       const -> vector<const Square*>;
   // Returns true if the player can make a castling move to the given square.
   auto CanCastle(const Player* p, const Square* s) const -> bool;
-  // Gets a move from a string
-  auto GetMoveFromStr(std::string str, Player* p) -> Move;
+
 };
 }  // namespace game
 

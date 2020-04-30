@@ -11,6 +11,7 @@ namespace myapp {
 
 
 class MyApp : public cinder::app::App {
+  const long request_ok = 200;
  public:
   MyApp();
   void setup() override;
@@ -20,13 +21,14 @@ class MyApp : public cinder::app::App {
   void DrawBoard();
  private:
   game::Game game_;
-  const game::Player* player_;
+  game::Player* player_;
   const board::Square* origin_square_;
   const board::Square* destination_square_;
   game::Player* turn_;
+  std::string last_move_str;
   void ResetMoves();
   void GetUpdate();
-  void postUpdate(const game::Move move);
+  void PostUpdate(const game::Move move);
 };
 
 }  // namespace myapp

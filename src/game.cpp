@@ -31,17 +31,20 @@ Player::Player(const piece::Color c, const Square* king) {
 
 Move Player::PlayMove(const Square *from, const Square *to, Game* game) {
   if (!from || !to || !game) {
-    return {this, nullptr, nullptr, false, MoveState::kIllegal};
+    return {this, nullptr, nullptr, game->move_number_, false,
+            MoveState::kIllegal};
   }
-  assert(!from->IsEmpty());
-  assert(from->piece_->color_ == color_);
+  size_t move_number = game->move_number_;
+  if (from->piece_->color_ == piece::Color::kWhite) {
+    ++move_number;
+  }
   if (from ->piece_->type_ == piece::PieceType::kKing) {
-    return {this, from, to, false, MoveState::kIllegal};
+    return {this, from, to, move_number, false, MoveState::kIllegal};
   } else {
     if (!game->CanMove(from, to, this)) {
-      return {this, from, to, false, MoveState::kIllegal};
+      return {this, from, to, move_number, false, MoveState::kIllegal};
     } else {
-      return {this, from, to, false, MoveState::kSuccess};
+      return {this, from, to, move_number, false, MoveState::kSuccess};
     }
   }
 }
@@ -69,6 +72,7 @@ Game::Game(const Game &other) {
   board_ = new Board(*other.board_);
   id_ = other.id_;
   move_number_ = other.move_number_;
+  moves_ = other.moves_;
 }
 
 auto Game::operator=(const Game &other) -> Game & {
@@ -83,6 +87,7 @@ auto Game::operator=(const Game &other) -> Game & {
   board_ = new Board(*other.board_);
   id_ = other.id_;
   move_number_ = other.move_number_;
+  moves_ = other.moves_;
   return *this;
 }
 
@@ -297,10 +302,19 @@ auto Game::CanCastle(const Player* p, const Square* s) const -> bool {
   }
   return true;
 }
-auto Game::GetMoveFromStr(std::string str, Player* p) -> Move {
+auto Game::GetMoveFromStr(const std::string str, Player* p) -> Move {
   assert(str.size() == 4);
-  int factor = '0';
-  return p->PlayMove(board_->At(str.at(0) - factor, str.at(1) - '0'),
-              board_->At(str.at(2) - factor, str.at(3) - '0'), this);
+  int offset = '0';
+  const Square* from = board_->At(str.at(0) - offset, str.at(1) - offset);
+  const Square* to =  board_->At(str.at(2) - offset, str.at(3) - offset);
+  return p->PlayMove(from, to, this);
+}
+
+std::ostream &operator << (std::ostream &os, const Move &move) {
+  os << move.from_->x_;
+  os << move.from_->y_;
+  os << move.to_->x_;
+  os << move.to_->y_;
+  return os;
 }
 }  // namespace game
