@@ -5,7 +5,7 @@
 #include <cinder/app/App.h>
 #include <cinder/gl/draw.h>
 #include <curl/curl.h>
-
+#include <gflags/gflags.h>
 #include <json.hpp>
 #include <stdio.h>
 #include "chess/board.h"
@@ -23,9 +23,19 @@ using cinder::app::MouseEvent;
 using cinder::gl::Texture;
 using nlohmann::json;
 
+DECLARE_uint32(game_id);
+DECLARE_string(color);
+
 ci::audio::VoiceRef err_sound;
-MyApp::MyApp() : game_(game::Game(3)) {
-  player_ = game_.white_;
+
+MyApp::MyApp() : game_(game::Game(FLAGS_game_id)) {
+  if (FLAGS_color == "black") {
+    player_ = game_.black_;
+  } else if (FLAGS_color == "white") {
+    player_ = game_.white_;
+  } else {
+    player_ = nullptr;
+  }
   turn_ = game_.white_;
 }
 
@@ -37,7 +47,9 @@ void MyApp::setup() {
 }
 
 void MyApp::update() {
-  GetUpdate();
+  if (player_ != nullptr) {
+    GetUpdate();
+  }
   game::Player *p = game_.white_;
   if (turn_ == game_.black_) {
     p = game_.black_;
@@ -59,7 +71,9 @@ void MyApp::update() {
     } else {
       turn_ = game_.white_;
     }
-    PostUpdate(m);
+    if (player_ != nullptr) {
+      PostUpdate(m);
+    }
   } else {
     err_sound->start();
   }
@@ -71,6 +85,9 @@ void MyApp::draw() { DrawBoard(); }
 void MyApp::mouseDown(MouseEvent event) {
   const board::Square *at = game_.board_->At(floor(event.getX() / kSquareSize),
                                              floor(event.getY() / kSquareSize));
+  if (turn_ != player_ && player_ != nullptr) {
+    return;
+  }
   // If there is a registered origin square.
   if (origin_square_) {
     // If the square clicked is of the same color as the player's turn,
@@ -151,7 +168,6 @@ void MyApp::GetUpdate() {
     res = curl_easy_perform(curl);
     if (res != CURLE_OK) {
       std::cout << "Server Error" + std::to_string(res);
-      std::exit(-1);
     }
     long response_code;
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
@@ -199,7 +215,6 @@ void MyApp::PostUpdate(const game::Move move) {
   move_stream << move;
   CURLcode res;
   CURL *curl;
-  curl_global_init(CURL_GLOBAL_ALL);
   curl = curl_easy_init();
   if (curl) {
     std::string post_fields =
@@ -208,35 +223,16 @@ void MyApp::PostUpdate(const game::Move move) {
         "&move=" + move_stream.str() + "&game_id=" + std::to_string(game_
                                                                          .id_));
     curl_easy_setopt(curl, CURLOPT_URL, (base_url + post_fields).c_str());
-    //curl_easy_setopt(curl, CURLOPT_HTTPHEADER, "Transfer-Encoding: chunked");
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "number=andrea");
     curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "");
     curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
     res = curl_easy_perform(curl);
+    if (res != request_ok) {
+      std::cout << "Error connecting to server.";
+    }
     curl_easy_cleanup(curl);
     last_move_str = move_stream.str();
-    //std::exit(-1);
   }
-  curl_global_cleanup();
-  //std::exit(0);
-    /*if (res != CURLE_OK) {
-      std::cout << "Could not post move to server in game with id: " +
-                       std::to_string(game_.id_) + ".";
-      std::exit(-1);
-    }
-    long response_code;
-    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
-    if (response_code != request_ok) {
-      std::cout << "bad request";
-      return;
-    }
-    last_move_str = move_stream.str();
-    curl_easy_cleanup(curl);
-    return;
-  }
-
-  std::cout << "Could not connect to server.";
-  std::exit(-1);*/
 }
 }  // namespace myapp
 

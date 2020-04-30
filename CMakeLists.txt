@@ -136,3 +136,10 @@ if(NOT nlohmann_json_POPULATED)
     add_library(nlohmann_json INTERFACE)
     target_include_directories(nlohmann_json INTERFACE ${nlohmann_json_SOURCE_DIR}/single_include)
 endif()
+
+# Adds gflags::gflags
+FetchContent_GetProperties(gflags)
+if(NOT gflags_POPULATED)
+    FetchContent_Populate(gflags)
+    add_subdirectory(${gflags_SOURCE_DIR} ${gflags_BINARY_DIR})
+endif()
