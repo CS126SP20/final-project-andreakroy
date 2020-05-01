@@ -55,23 +55,24 @@ void MyApp::update() {
   if (player_ != nullptr && !url_.empty()) {
     GetUpdate();
   }
-  game::Player *p = game_.white_;
-  if (turn_ == game_.black_) {
-    p = game_.black_;
+
+  if (player_ != turn_) {
+    return;
   }
+
   // If the destination and origin squares are not selected do nothing
   if (!destination_square_ || !origin_square_) {
     return;
   }
   // If the player selected the wrong color, do nothing
-  if (origin_square_->piece_->color_ != p->color_) {
+  if (origin_square_->piece_->color_ != turn_->color_) {
     return;
   }
 
   // If playing the move is successful
-  auto m = p->PlayMove(origin_square_, destination_square_, &game_);
+  auto m = turn_->PlayMove(origin_square_, destination_square_, &game_);
   if (game_.PlayTurn(m)) {
-    if (p == game_.white_) {
+    if (turn_ == game_.white_) {
       turn_ = game_.black_;
     } else {
       turn_ = game_.white_;
@@ -100,6 +101,7 @@ void MyApp::mouseDown(MouseEvent event) {
     if (at->piece_ && at->piece_->color_ == turn_->color_) {
       origin_square_ = at;
       destination_square_ = nullptr;
+      std::cout << "l";
       return;
     }
     // Otherwise, the destination square is the new square.
@@ -108,11 +110,13 @@ void MyApp::mouseDown(MouseEvent event) {
   } else {
     if (!at->piece_) {
       ResetMoves();
+      std::cout << "m";
       return;
     }
     if (at->piece_->color_ == turn_->color_) {
       origin_square_ = at;
       destination_square_ = nullptr;
+      std::cout << "n";
       return;
     }
   }
@@ -186,8 +190,9 @@ void MyApp::GetUpdate() {
       std::cout << "parse error\n";
       return;
     }
-
-    if (move == last_move_str) {
+    std::stringstream last;
+    last << last_move_;
+    if (move == last.str()) {
       return;
     }
     game::Player* prev_move = game_.white_;
@@ -195,14 +200,13 @@ void MyApp::GetUpdate() {
       prev_move = game_.black_;
     }
     to_play = game_.GetMoveFromStr(move, prev_move);
-    if (to_play.player_->color_ == piece::Color::kWhite) {
+    if (prev_move->color_ == piece::Color::kWhite) {
       turn_ = game_.black_;
     } else {
-      turn_ = game_.black_;
+      turn_ = game_.white_;
     }
     game_.PlayTurn(to_play);
-    last_move_str = move;
-    std::cout << buffer;
+    last_move_ = to_play;
     game::Move to_return;
     to_return.player_ = game_.white_;
     if (player_ == game_.white_) {
@@ -236,7 +240,7 @@ void MyApp::PostUpdate(const game::Move move) {
       std::cout << "Error connecting to server.";
     }
     curl_easy_cleanup(curl);
-    last_move_str = move_stream.str();
+    last_move_ = move;
   }
 }
 }  // namespace myapp

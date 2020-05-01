@@ -311,6 +311,9 @@ auto Game::GetMoveFromStr(const std::string str, Player* p) -> Move {
 }
 
 std::ostream &operator << (std::ostream &os, const Move &move) {
+  if (move.from_ == nullptr || move.to_ == nullptr) {
+    return os;
+  }
   os << move.from_->x_;
   os << move.from_->y_;
   os << move.to_->x_;
