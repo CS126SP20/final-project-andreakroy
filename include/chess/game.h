@@ -19,14 +19,8 @@ using std::vector;
 enum class GameState {
   kDraw,
   kIP,
-  kP1Win,
-  kP2Win
-};
-
-// Enum class representing all possible move states.
-enum class MoveState {
-  kSuccess,
-  kIllegal
+  kWhiteWin,
+  kBlackWin
 };
 
 // Player and Game class forward declarations.
@@ -44,8 +38,6 @@ struct Move {
   // True if the move was a castling move, false otherwise.
   size_t number_ = 1;
   bool IsCastling_;
-  // Whether the move was successful or illegal.
-  MoveState state_;
 };
 
 std::ostream &operator << (std::ostream &os, const Move &move);
@@ -116,7 +108,7 @@ class Game {
   auto WouldKingBeInCheck(const Square* at, piece::Color c) const -> bool;
   // Gets a vector of pointers to squares of all possible moves by a player
   // from a square.
-  auto GetAllPossibleMoves(const Square* from, Player* p)
+  auto GetAllPossibleKingMoves(Player* p)
       const -> vector<const Square*>;
   // Returns true if the player can make a castling move to the given square.
   auto CanCastle(const Player* p, const Square* s) const -> bool;

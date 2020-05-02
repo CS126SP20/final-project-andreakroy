@@ -233,13 +233,31 @@ King::King(const Color c) : Piece(PieceType::kKing, c) {
 }
 auto King::CanMove(size_t x_old, size_t y_old, size_t x_new, size_t y_new) const
     -> bool {
-  // Returns true if the king makes a legal move that is not castling.
+  if ((y_old == y_new) && (y_old == 0 || y_old == 7)) {
+    if (x_old == 4 && (x_new == 6 || x_new == 2)) {
+      return true;
+    }
+  }
   return (abs(x_new - x_old) <= 1 && abs(y_old - y_new) <= 1);
 }
 
 auto King::Path(size_t x_old, size_t y_old, size_t x_new, size_t y_new) const
     -> vector<tuple<size_t, size_t>> {
   assert(CanMove(x_old, y_old, x_new, y_new));
-  return vector<tuple<size_t, size_t>>();
+  vector<tuple<size_t, size_t>> path;
+  if (x_old == x_new) {
+    path.emplace_back(x_old, y_new);
+    return path;
+  }
+  if (x_old < x_new) {
+    for (size_t x = x_new + 1; x <= x_old; x++) {
+      path.emplace_back(x, y_old);
+    }
+    return path;
+  }
+  for (size_t x = x_new - 1; x >= x_old; x--) {
+      path.emplace_back(x, y_old);
+  }
+  return path;
 }
 }  // namespace piece

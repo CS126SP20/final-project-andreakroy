@@ -56,7 +56,7 @@ void MyApp::update() {
     GetUpdate();
   }
 
-  if (player_ != turn_) {
+  if (player_ != turn_ && player_ != nullptr) {
     return;
   }
 
@@ -65,7 +65,8 @@ void MyApp::update() {
     return;
   }
   // If the player selected the wrong color, do nothing
-  if (origin_square_->piece_->color_ != turn_->color_) {
+  if (origin_square_->IsEmpty() || origin_square_->piece_->color_ !=
+      turn_->color_) {
     return;
   }
 
@@ -79,6 +80,20 @@ void MyApp::update() {
     }
     if (player_ != nullptr && !url_.empty()) {
       PostUpdate(m);
+    }
+    switch(game_.EvaluateBoard()) {
+      case game::GameState::kIP:
+        std::cout << "progress";
+        return;
+      case game::GameState::kWhiteWin:
+        std::cout << "player1";
+        return;
+      case game::GameState::kBlackWin:
+        std::cout << "player2";
+        return;
+      case game::GameState::kDraw:
+        std::cout << "draw";
+        return;
     }
   } else {
     err_sound->start();
@@ -101,7 +116,6 @@ void MyApp::mouseDown(MouseEvent event) {
     if (at->piece_ && at->piece_->color_ == turn_->color_) {
       origin_square_ = at;
       destination_square_ = nullptr;
-      std::cout << "l";
       return;
     }
     // Otherwise, the destination square is the new square.
@@ -110,16 +124,15 @@ void MyApp::mouseDown(MouseEvent event) {
   } else {
     if (!at->piece_) {
       ResetMoves();
-      std::cout << "m";
       return;
     }
     if (at->piece_->color_ == turn_->color_) {
       origin_square_ = at;
       destination_square_ = nullptr;
-      std::cout << "n";
       return;
     }
   }
+
 }
 
 void MyApp::DrawBoard() {
@@ -219,7 +232,6 @@ void MyApp::GetUpdate() {
 }
 
 void MyApp::PostUpdate(const game::Move move) {
-  assert(move.state_ == game::MoveState::kSuccess);
   std::stringstream move_stream;
   move_stream << move;
   CURLcode res;
