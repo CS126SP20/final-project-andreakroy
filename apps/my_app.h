@@ -19,6 +19,7 @@ class MyApp : public cinder::app::App {
   void draw() override;
   void mouseDown(cinder::app::MouseEvent event) override;
   void DrawBoard();
+  void DrawGameOver();
  private:
   game::Game game_;
   game::Player* player_;
@@ -27,6 +28,7 @@ class MyApp : public cinder::app::App {
   game::Player* turn_;
   game::Move last_move_;
   std::string url_;
+  game::GameState state_;
   void ResetMoves();
   void GetUpdate();
   void PostUpdate(const game::Move move);

@@ -28,6 +28,8 @@ DECLARE_string(color);
 DECLARE_string(url);
 
 ci::audio::VoiceRef err_sound;
+std::string kFont = "Arial Bold";
+size_t kFontSize = 60;
 
 MyApp::MyApp() : game_(game::Game(FLAGS_game_id)) {
   if (FLAGS_color == "black") {
@@ -38,6 +40,7 @@ MyApp::MyApp() : game_(game::Game(FLAGS_game_id)) {
     player_ = nullptr;
   }
   turn_ = game_.white_;
+  state_ = game::GameState::kIP;
   url_ = FLAGS_url;
   if (url_.empty()) {
     player_ = nullptr;
@@ -52,6 +55,7 @@ void MyApp::setup() {
 }
 
 void MyApp::update() {
+
   if (player_ != nullptr && !url_.empty()) {
     GetUpdate();
   }
@@ -81,27 +85,20 @@ void MyApp::update() {
     if (player_ != nullptr && !url_.empty()) {
       PostUpdate(m);
     }
-    switch(game_.EvaluateBoard()) {
-      case game::GameState::kIP:
-        std::cout << "progress";
-        return;
-      case game::GameState::kWhiteWin:
-        std::cout << "player1";
-        return;
-      case game::GameState::kBlackWin:
-        std::cout << "player2";
-        return;
-      case game::GameState::kDraw:
-        std::cout << "draw";
-        return;
-    }
+    state_ = game_.EvaluateBoard();
   } else {
     err_sound->start();
   }
   ResetMoves();
 }
 
-void MyApp::draw() { DrawBoard(); }
+void MyApp::draw() {
+  if (state_ != game::GameState::kIP) {
+    DrawGameOver();
+    return;
+  }
+  DrawBoard();
+}
 
 void MyApp::mouseDown(MouseEvent event) {
   const board::Square *at = game_.board_->At(floor(event.getX() / kSquareSize),
@@ -168,6 +165,34 @@ void MyApp::ResetMoves() {
 size_t WriteCallBack(void *contents, size_t size, size_t nmemb, void *userp) {
   ((std::string *)userp)->append((char *)contents, size * nmemb);
   return size * nmemb;
+}
+
+void MyApp::DrawGameOver() {
+  cinder::gl::clear(cinder::Color::white());
+  std::string txt;
+  switch (state_) {
+    case game::GameState::kDraw:
+      txt = "Draw!";
+      break;
+    case game::GameState::kBlackWin:
+      txt = "Black Wins!";
+      break;
+    case game::GameState::kWhiteWin:
+      txt = "White Wins!";
+      break;
+    default:
+      break;
+  }
+  auto box = cinder::TextBox()
+    .alignment(cinder::TextBox::CENTER)
+    .size({getWindowSize()})
+                 .font(cinder::Font(kFont, kFontSize))
+                 .color(cinder::Color::black())
+    .text(txt);
+  const auto box_size = box.getSize();
+  const auto surface = box.render();
+  const auto texture = cinder::gl::Texture::create(surface);
+  cinder::gl::draw(texture, {0, getWindowSize().y / 2});
 }
 
 void MyApp::GetUpdate() {
