@@ -25,11 +25,10 @@ Player::Player(const piece::Color c, const Square* king) {
   color_ = c;
   numPieces_ = 16;
   HasKingMoved_ = false;
-  IsKingInCheck_ = false;
   kingSquare_ = king;
 }
 
-Move Player::PlayMove(const Square *from, const Square *to, Game* game) {
+auto Player::PlayMove(const Square *from, const Square *to, Game* game) -> Move {
   if (!from || !to || !game) {
     return {this, nullptr, nullptr, 0, false};
   }
@@ -43,6 +42,10 @@ Move Player::PlayMove(const Square *from, const Square *to, Game* game) {
     }
   }
   return {this, from, to, move_number, false};
+}
+
+auto Player::IsKingInCheck() -> const bool {
+  return !PiecesChecking_.empty();
 }
 
 Game::Game(const int id) {
@@ -88,14 +91,14 @@ auto Game::operator=(const Game &other) -> Game & {
 }
 
 auto Game::CanMove(const Square* from, const Square* to, Player* p) const -> bool {
-  if (!from || !to || !p) {
+  if (!from || !from->piece_ || !to || !p) {
     return false;
   }
   if (from == to) {
     return false;
   }
   //Can't capture a piece of the same color
-  if (to->piece_ != nullptr && to->piece_->color_ == from->piece_->color_) {
+  if (to->piece_ && to->piece_->color_ == from->piece_->color_) {
     return false;
   }
 
@@ -118,6 +121,9 @@ auto Game::CanMove(const Square* from, const Square* to, Player* p) const -> boo
       if (!from->piece_->CanMove(from->x_, from->y_, to->x_, to->y_)) {
         return false;
       }
+      if (from->x_ != to->x_ && !to->piece_) {
+        return false;
+      }
       // Can't move straight ahead if there is a piece there
       if (from->x_ - to->x_ == 0 && !to->IsEmpty()) {
         return false;
@@ -129,81 +135,41 @@ auto Game::CanMove(const Square* from, const Square* to, Player* p) const -> boo
 }
 
 auto Game::PlayTurn(const Move m) -> bool {
-  //If the king is in check and the piece to move is not the king, return false
-  if (m.player_->IsKingInCheck_) {
-    if (m.from_->piece_->type_ != piece::PieceType::kKing) {
-      // If after the proposed move the king would still be in check return false.
-      if (m.to_->IsEmpty() || m.to_->piece_->color_ != m.player_->color_) {
-        board_->Set(m.from_, nullptr);
-        board_->Set(m.to_, m.from_->piece_);
-      }
-      if (WouldKingBeInCheck(m.player_->kingSquare_, m.player_->color_)) {
-        board_->Set(m.from_, m.from_->piece_);
-        board_->Set(m.to_, m.to_->piece_);
-        return false;
-      }
-      board_->Set(m.from_, m.from_->piece_);
-      board_->Set(m.to_, m.to_->piece_);
-    } else {
-      if (WouldKingBeInCheck(m.to_, m.player_->color_)) {
-        return false;
-    }
-  }
-}
-
-if (!CanMove(m.from_, m.to_, m.player_)) {
+  piece::Piece* from_temp = m.from_->piece_;
+  piece::Piece* to_temp = m.to_->piece_;
+  if (m.IsCastling_ && !CanCastle(m.player_, m.to_)) {
     return false;
   }
-  if (m.from_->piece_->type_ == piece::PieceType::kPawn) {
-    if (m.from_->x_ != m.to_->x_ && !m.to_->piece_) {
-      return false;
+  if (m.player_->IsKingInCheck()) {
+    // try to make the move.
+    board_->Set(m.to_, from_temp);
+    board_->Set(m.from_, nullptr);
+    // if the king is still in check
+    if (!GetPiecesChecking(m.player_->kingSquare_, m.player_).empty()) {
+      // clean up and return false
+     board_->Set(m.to_, to_temp);
+     board_->Set(m.from_, from_temp);
+     return false;
     }
   }
-  if (m.from_->piece_->type_ == piece::PieceType::kKing) {
-    if (m.IsCastling_ && CanCastle(m.player_, m.to_)) {
-      if (m.from_->x_ > m.to_->x_) {
-        board_->Set(m.to_, m.from_->piece_);
-        board_->Set(m.from_, nullptr);
-        board_->Set(board_->At(m.to_->x_ + 1, m.from_->y_),
-                    board_->At(0, m.from_->y_)->piece_);
-        board_->Set(board_->At(0, m.from_->y_), nullptr);
-      } else {
-        board_->Set(m.to_, m.from_->piece_);
-        board_->Set(m.from_, nullptr);
-        board_->Set(board_->At(m.to_->x_ - 1, m.from_->y_),
-                    board_->At(board::kSize - 1, m.from_->y_)->piece_);
-        board_->Set(board_->At(board::kSize - 1, m.from_->y_), nullptr);
-      }
-      m.player_->kingSquare_ = m.to_;
-      moves_.emplace_back(m);
-      return true;
-    }
-    if (WouldKingBeInCheck(m.to_, m.from_->piece_->color_)) {
-      return false;
-    }
 
-    m.player_->kingSquare_ = m.to_;
+  if (!CanMove(m.from_, m.to_, m.player_)) {
+    return false;
   }
 
-  if (m.from_->piece_->type_ == piece::PieceType::kRook) {
+  // ************* By this point, the move is legal **************
+
+  // If the move is by a rook, update the player rook movement vars
+  if (from_temp->type_ == piece::PieceType::kRook) {
     if (m.from_->x_ == 0) {
       m.player_->HasQueenRookMoved_ = true;
     } else if (m.from_->y_ == 7) {
       m.player_->HasKingRookMoved_ = true;
     }
   }
-  board_->Set(m.to_, m.from_->piece_);
-  board_->Set(m.from_, nullptr);
-  if (WouldKingBeInCheck(white_->kingSquare_, piece::Color::kWhite)) {
-    white_->IsKingInCheck_ = true;
-  } else if (WouldKingBeInCheck(black_->kingSquare_, piece::Color::kBlack)) {
-    black_->IsKingInCheck_ = true;
-  } else {
-    white_->IsKingInCheck_ = false;
-    black_->IsKingInCheck_ = false;
-  }
-  moves_.emplace_back(m);
-  if (m.to_->piece_ != nullptr) {
+
+  // If the move was a capture, update the number of pieces
+  if (to_temp) {
     if (m.player_->color_ == piece::Color::kWhite) {
       black_->numPieces_--;
     } else {
@@ -211,11 +177,38 @@ if (!CanMove(m.from_, m.to_, m.player_)) {
     }
   }
 
-  // If the player is white, increment the move counter
+  // If the player was white, increment the number of moves
   if (m.player_ == white_) {
-    move_number_++;
+    ++move_number_;
   }
 
+  if (from_temp->type_ == piece::PieceType::kKing) {
+    m.player_->HasKingRookMoved_ = true;
+    m.player_->kingSquare_ = m.to_;
+  }
+
+  if (m.IsCastling_) {
+    if (m.from_->x_ > m.to_->x_) {
+      board_->Set(m.to_, m.from_->piece_);
+      board_->Set(m.from_, nullptr);
+      board_->Set(board_->At(m.to_->x_ + 1, m.from_->y_),
+                  board_->At(0, m.from_->y_)->piece_);
+      board_->Set(board_->At(0, m.from_->y_), nullptr);
+    } else {
+      board_->Set(m.to_, m.from_->piece_);
+      board_->Set(m.from_, nullptr);
+      board_->Set(board_->At(m.to_->x_ - 1, m.from_->y_),
+                  board_->At(board::kSize - 1, m.from_->y_)->piece_);
+      board_->Set(board_->At(board::kSize - 1, m.from_->y_), nullptr);
+    }
+  } else {
+    board_->Set(m.to_, from_temp);
+    board_->Set(m.from_, nullptr);
+  }
+
+  // update player check tracker
+  white_->PiecesChecking_ = GetPiecesChecking(white_->kingSquare_, white_);
+  black_->PiecesChecking_ = GetPiecesChecking(black_->kingSquare_, black_);
   return true;
 }
 
@@ -232,31 +225,29 @@ auto Game::CheckPath(const Square* from, const Square* to) const -> bool {
   }
   return true;
 }
-auto Game::WouldKingBeInCheck(const Square* at, piece::Color c) const -> bool {
+auto Game::GetPiecesChecking(const Square* at, Player* player) const ->
+    vector<const Square*> {
+  //If a piece can move to the king's square and is of the opposite
+  // color, the king is in check.
+  vector<const Square*> squares;
   for (int j = board::kSize - 1; j >= 0; j--) {
     for (int i = 0; i < board::kSize; i++) {
       const Square* s = board_->At(i, j);
-      if (s->IsEmpty() || s->piece_->color_ == c) {
+      if (s->IsEmpty() || s->piece_->color_ == player->color_) {
         continue;
       }
-      //If a piece can move to the king's square and is of the opposite
-      // color, the king is in check.
-      Player* p = white_;
-      if (c == piece::Color::kWhite) {
-        p = black_;
-      }
       piece::Piece* temp = at->piece_;
-      if (temp && temp->color_ != p->color_) {
+      if (temp && temp->color_ != player->color_) {
         board_->Set(at, nullptr);
       }
-      if (CanMove(s, at, p)) {
+      if (CanMove(s, at, player)) {
         board_->Set(at, temp);
-        return true;
+        squares.emplace_back(s);
       }
       board_->Set(at, temp);
     }
   }
-  return false;
+  return squares;
 }
 
 auto Game::GetAllPossibleKingMoves(Player* p)
@@ -279,7 +270,8 @@ auto Game::GetAllPossibleKingMoves(Player* p)
       if (temp && temp->color_ != p->color_) {
         board_->Set(test, nullptr);
       }
-      if (CanMove(p->kingSquare_, test, p) && !WouldKingBeInCheck(test, p->color_)) {
+      if (CanMove(p->kingSquare_, test, p) && !GetPiecesChecking(test, p).empty
+                                               ()) {
         board_->Set(test, temp);
         moves.emplace_back(test);
       }
@@ -290,14 +282,14 @@ auto Game::GetAllPossibleKingMoves(Player* p)
 }
 
 auto Game::EvaluateBoard() const -> GameState {
-  if (GetAllPossibleKingMoves(white_).empty()) {
-    if (white_->IsKingInCheck_) {
+  if (!GetAllPossibleKingMoves(white_).empty()) {
+    if (white_->PiecesChecking_.empty()) {
       return GameState::kBlackWin;
     } else if (white_->numPieces_ == 0) {
       return GameState::kDraw;
     }
   } else if (GetAllPossibleKingMoves(black_).empty()) {
-    if (black_->IsKingInCheck_) {
+    if (!black_->PiecesChecking_.empty()) {
       return GameState::kWhiteWin;
     } else if (black_-> numPieces_ == 0) {
       return GameState::kDraw;
@@ -306,7 +298,7 @@ auto Game::EvaluateBoard() const -> GameState {
   return GameState::kIP;
 }
 
-auto Game::CanCastle(const Player* p, const Square* s) const -> bool {
+auto Game::CanCastle(Player* p, const Square* s) const -> bool {
   //Check that the square to go to is the correct kingside square(6) or
   // queenside square(6).
   if (s->x_ != 2 && s->x_ != 6) {
@@ -325,7 +317,7 @@ auto Game::CanCastle(const Player* p, const Square* s) const -> bool {
     row = 0;
   } else {
     //If the player is black make sure castling on back row.
-    if (s->y_ != 7) {
+    if (s->y_ != board::kSize - 1) {
       return false;
     }
     row = 7;
@@ -333,7 +325,7 @@ auto Game::CanCastle(const Player* p, const Square* s) const -> bool {
   if (p->HasKingMoved_) {
     //Can't castle if the king has moved.
     return false;
-  } else if (p->IsKingInCheck_) {
+  } else if (!p->PiecesChecking_.empty()) {
     //Can't castle if the king is in check.
     return false;
   } else if (p->HasKingRookMoved_ && kingSide) {
@@ -349,9 +341,22 @@ auto Game::CanCastle(const Player* p, const Square* s) const -> bool {
     for (int x_pos = p->kingSquare_->x_ + 1; x_pos <= s->x_; x_pos ++) {
       const Square* intermediate = board_->At(x_pos, s->y_);
       if (!intermediate->IsEmpty()) {
+        // Can't castle if there are pieces at intermediate squares.
+        return false;
+      } else if (!GetPiecesChecking(intermediate, p).empty()) {
+        // Can't castle through check.
+        return false;
+      }
+    }
+  } else {
+    //Look at every square between the start and end square to see if the
+    // king would be in check.
+    for (int x_pos = s->x_; x_pos < p->kingSquare_->x_; x_pos ++) {
+      const Square* intermediate = board_->At(x_pos, s->y_);
+      if (!intermediate->IsEmpty()) {
         //Can't castle if there are pieces at intermediate squares.
         return false;
-      } else if (WouldKingBeInCheck(intermediate, p->color_)) {
+      } else if (!GetPiecesChecking(intermediate, p).empty()) {
         //Can't castle through check.
         return false;
       }

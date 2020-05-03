@@ -52,10 +52,13 @@ class Player {
   // Function to allow the player to attempt to make a move. Returns a struct
   // packaging the move metadata.
   auto PlayMove(const Square* from, const Square* to, Game* game) -> Move;
+  // treu iff the player's king is in check
+  auto IsKingInCheck() -> bool const;
   // true iff the player's king has moved during the course of the game.
   bool HasKingMoved_;
-  // true iff the king is in check.
-  bool IsKingInCheck_;
+  // empty iff the king is in check, otherwise the squares from which the
+  // king is being checked..
+  vector<const Square*> PiecesChecking_;
   // true iff the king rook has moved.
   bool HasKingRookMoved_;
   // true iff the queen rook has moved.
@@ -103,15 +106,16 @@ class Game {
   // Checks whether the piece's path tries to run over an existing piece in a
   // move from a square to another.
   auto CheckPath(const Square* from, const Square *to) const -> bool;
-  // Returns true if the king of the given color would be in check from the
-  // other player's pieces at a given square.
-  auto WouldKingBeInCheck(const Square* at, piece::Color c) const -> bool;
+  // Populates the player's SquaresChecking vector with all the squares from
+  // which the king would receive a check at the square at.
+  auto GetPiecesChecking(const Square* at, Player* player) const ->
+      vector<const Square*>;
   // Gets a vector of pointers to squares of all possible moves by a player
   // from a square.
   auto GetAllPossibleKingMoves(Player* p)
       const -> vector<const Square*>;
   // Returns true if the player can make a castling move to the given square.
-  auto CanCastle(const Player* p, const Square* s) const -> bool;
+  auto CanCastle(Player* p, const Square* s) const -> bool;
 
 };
 }  // namespace game
