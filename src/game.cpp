@@ -137,21 +137,35 @@ auto Game::CanMove(const Square* from, const Square* to, Player* p) const -> boo
 auto Game::PlayTurn(const Move m) -> bool {
   piece::Piece* from_temp = m.from_->piece_;
   piece::Piece* to_temp = m.to_->piece_;
+  bool isKingMove;
+  const Square* last_king_square = m.player_->kingSquare_;
+  if (from_temp->type_ == piece::PieceType::kKing) {
+    isKingMove = true;
+  }
+
   if (m.IsCastling_ && !CanCastle(m.player_, m.to_)) {
     return false;
   }
-  if (m.player_->IsKingInCheck()) {
-    // try to make the move.
-    board_->Set(m.to_, from_temp);
-    board_->Set(m.from_, nullptr);
-    // if the king is still in check
-    if (!GetPiecesChecking(m.player_->kingSquare_, m.player_).empty()) {
-      // clean up and return false
-     board_->Set(m.to_, to_temp);
-     board_->Set(m.from_, from_temp);
-     return false;
-    }
+
+  // try to make the move.
+  board_->Set(m.to_, from_temp);
+  board_->Set(m.from_, nullptr);
+  if (isKingMove) {
+    m.player_->kingSquare_ = m.to_;
   }
+  // if the king is in check
+  if (!GetPiecesChecking(m.player_->kingSquare_, m.player_).empty()) {
+    // clean up and return false
+   board_->Set(m.to_, to_temp);
+   board_->Set(m.from_, from_temp);
+   if (isKingMove) {
+     m.player_->kingSquare_ = last_king_square;
+   }
+   return false;
+  }
+  board_->Set(m.to_, to_temp);
+  board_->Set(m.from_, from_temp);
+
 
   if (!CanMove(m.from_, m.to_, m.player_)) {
     return false;
@@ -225,28 +239,31 @@ auto Game::CheckPath(const Square* from, const Square* to) const -> bool {
   }
   return true;
 }
+
 auto Game::GetPiecesChecking(const Square* at, Player* player) const ->
     vector<const Square*> {
   //If a piece can move to the king's square and is of the opposite
   // color, the king is in check.
   vector<const Square*> squares;
-  for (int j = board::kSize - 1; j >= 0; j--) {
+  piece::Piece* temp = at->piece_;
+  board_->Set(at, nullptr);
+  const Square* sq;
+  Player* p = white_;
+  if (p == player) {
+    p = black_;
+  }
+  for (int j = 0; j < board::kSize; j++) {
     for (int i = 0; i < board::kSize; i++) {
-      const Square* s = board_->At(i, j);
-      if (s->IsEmpty() || s->piece_->color_ == player->color_) {
+      sq = board_->At(i, j);
+      if (!sq->piece_ || sq->piece_->color_ == player->color_) {
         continue;
       }
-      piece::Piece* temp = at->piece_;
-      if (temp && temp->color_ != player->color_) {
-        board_->Set(at, nullptr);
+      if (CanMove(sq, at, p)) {
+        squares.emplace_back(sq);
       }
-      if (CanMove(s, at, player)) {
-        board_->Set(at, temp);
-        squares.emplace_back(s);
-      }
-      board_->Set(at, temp);
     }
   }
+  board_->Set(at, temp);
   return squares;
 }
 
