@@ -22,6 +22,8 @@ Player::Player(const piece::Color c, const Square* king) {
   color_ = c;
   numPieces_ = 16;
   HasKingMoved_ = false;
+  HasKingRookMoved_ = false;
+  HasQueenRookMoved_ = false;
   kingSquare_ = king;
 }
 
