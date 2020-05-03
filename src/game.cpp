@@ -3,11 +3,8 @@
 //
 
 #include "chess/game.h"
-
 #include <assert.h>
-
 #include <iostream>
-
 #include "chess/piece.h"
 
 namespace game {
@@ -287,9 +284,8 @@ auto Game::GetAllPossibleKingMoves(Player* p)
       if (temp && temp->color_ != p->color_) {
         board_->Set(test, nullptr);
       }
-      if (CanMove(p->kingSquare_, test, p) && !GetPiecesChecking(test, p).empty
+      if (CanMove(p->kingSquare_, test, p) && GetPiecesChecking(test, p).empty
                                                ()) {
-        board_->Set(test, temp);
         moves.emplace_back(test);
       }
       board_->Set(test, temp);
@@ -299,14 +295,14 @@ auto Game::GetAllPossibleKingMoves(Player* p)
 }
 
 auto Game::EvaluateBoard() const -> GameState {
-  if (!GetAllPossibleKingMoves(white_).empty()) {
-    if (white_->PiecesChecking_.empty()) {
+  if (GetAllPossibleKingMoves(white_).empty()) {
+    if (white_->IsKingInCheck()) {
       return GameState::kBlackWin;
     } else if (white_->numPieces_ == 0) {
       return GameState::kDraw;
     }
   } else if (GetAllPossibleKingMoves(black_).empty()) {
-    if (!black_->PiecesChecking_.empty()) {
+    if (black_->IsKingInCheck()) {
       return GameState::kWhiteWin;
     } else if (black_-> numPieces_ == 0) {
       return GameState::kDraw;
