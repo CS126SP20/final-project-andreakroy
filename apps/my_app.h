@@ -5,7 +5,7 @@
 
 #include <cinder/app/App.h>
 #include <vector>
-#include "chess/game.h"
+#include <chess/game.h>
 
 namespace myapp {
 

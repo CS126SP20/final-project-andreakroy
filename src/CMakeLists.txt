@@ -1,7 +1,6 @@
 # Note that headers are optional, and do not affect add_library, but they will not
 # show up in IDEs unless they are listed in add_library.
 
-# Use Cinder CMake macros.
 get_filename_component(CINDER_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../" ABSOLUTE)
 include("${CINDER_PATH}/proj/cmake/modules/cinderMakeApp.cmake")
 include("${FinalProject_SOURCE_DIR}/cmake/make_cinder_library.cmake")
@@ -26,19 +25,22 @@ ci_make_library(
         LIBRARIES
         BLOCKS
 )
+# Make an automatic library - will be static or dynamic based on user setting
+add_library(chess ${SOURCE_LIST} ${HEADER_LIST})
+
+target_include_directories(chess PUBLIC ../include)
 
 # All users of this library will need at least C++14
-target_compile_features(mylibrary PUBLIC cxx_std_14)
+target_compile_features(chess PUBLIC cxx_std_14)
 
-set_property(TARGET mylibrary PROPERTY
+set_property(TARGET chess PROPERTY
         MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-target_include_directories(mylibrary PUBLIC ../include)
 
 # Cross-platform compiler lints
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"
         OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(mylibrary PRIVATE
+    target_compile_options(chess PRIVATE
             -Wall
             -Wextra
             -Wswitch
