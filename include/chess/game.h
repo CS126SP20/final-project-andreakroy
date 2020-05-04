@@ -117,7 +117,6 @@ class Game {
       const -> vector<const Square*>;
   // Returns true if the player can make a castling move to the given square.
   auto CanCastle(Player* p, const Square* s) const -> bool;
-
 };
 }  // namespace game
 

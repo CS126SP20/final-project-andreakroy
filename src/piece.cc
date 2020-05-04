@@ -193,7 +193,7 @@ auto Queen::Path(const size_t x_old, const size_t y_old, const size_t x_new,
   vector<tuple<size_t, size_t>> path;
   int xf = 1;
   int yf = 1;
-    if (x_old == x_new) {
+  if (x_old == x_new) {
     for (int i = min(y_new, y_old); i <= max(y_new, y_old); i++) {
       if (y_new == i || y_old == i) {
         continue;
@@ -233,7 +233,8 @@ King::King(const Color c) : Piece(PieceType::kKing, c) {
 }
 auto King::CanMove(size_t x_old, size_t y_old, size_t x_new, size_t y_new) const
     -> bool {
-  if ((y_old == y_new) && (y_old == 0 || y_old == 7)) {
+  if ((y_old == y_new) && ((y_old == 0 && color_ == Color::kWhite) ||
+                           (y_old == 7 && color_ == Color::kBlack))) {
     if (x_old == 4 && (x_new == 6 || x_new == 2)) {
       return true;
     }
@@ -256,7 +257,7 @@ auto King::Path(size_t x_old, size_t y_old, size_t x_new, size_t y_new) const
     return path;
   }
   for (size_t x = x_new - 1; x >= x_old; x--) {
-      path.emplace_back(x, y_old);
+    path.emplace_back(x, y_old);
   }
   return path;
 }

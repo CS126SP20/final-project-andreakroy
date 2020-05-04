@@ -131,7 +131,7 @@ auto Game::CanMove(const Square* from, const Square* to, Player* p) const
           abs(last_move->from_->y_ - last_move->to_->y_) == 2) {
         return true;
       }
-      // if horizontal mvmt and not en passant return false
+      // if horizontal movement and not en passant return false
       if (from->x_ != to->x_ && !to->piece_) {
         return false;
       }
@@ -268,8 +268,8 @@ auto Game::GetPiecesChecking(const Square* at, Player* player) const
   if (p == player) {
     p = black_;
   }
-  for (int j = 0; j < board::kSize; j++) {
-    for (int i = 0; i < board::kSize; i++) {
+  for (size_t j = 0; j < board::kSize; j++) {
+    for (size_t i = 0; i < board::kSize; i++) {
       sq = board_->At(i, j);
       if (!sq->piece_ || sq->piece_->color_ == player->color_) {
         continue;
