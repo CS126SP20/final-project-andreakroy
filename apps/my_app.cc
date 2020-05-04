@@ -34,10 +34,13 @@ size_t kFontSize = 60;
 MyApp::MyApp() : game_(game::Game(FLAGS_game_id)) {
   if (FLAGS_color == "black") {
     player_ = game_.black_;
+    pov_ = piece::Color::kBlack;
   } else if (FLAGS_color == "white") {
     player_ = game_.white_;
+    pov_ = piece::Color::kWhite;
   } else {
     player_ = nullptr;
+    pov_ = piece::Color::kWhite;
   }
   turn_ = game_.white_;
   state_ = game::GameState::kIP;
@@ -101,8 +104,16 @@ void MyApp::draw() {
 }
 
 void MyApp::mouseDown(MouseEvent event) {
-  const board::Square *at = game_.board_->At(floor(event.getX() / kSquareSize),
-                                             floor(event.getY() / kSquareSize));
+  const board::Square *at;
+  if (pov_ == piece::Color::kBlack) {
+    at = game_.board_->At(floor(event.getX() / kSquareSize),
+                          floor(event.getY() / kSquareSize));
+  } else {
+    at = game_.board_->At(floor(event.getX() / kSquareSize),
+                          board::kSize - floor(event.getY() / kSquareSize) -
+                              1);
+  }
+
   if (turn_ != player_ && player_ != nullptr) {
     return;
   }
@@ -134,6 +145,7 @@ void MyApp::mouseDown(MouseEvent event) {
 
 void MyApp::DrawBoard() {
   cinder::gl::clear();
+  Rectf rect;
   for (size_t j = 0; j < board::kSize; j++) {
     for (size_t i = 0; i < board::kSize; i++) {
       const board::Square *s = game_.board_->At(i, j);
@@ -143,15 +155,26 @@ void MyApp::DrawBoard() {
         // If the square is selected, highlight it yellow.
         cinder::gl::color(board::yellow);
       }
-      cinder::gl::drawSolidRect(s->loc_);
+      if (pov_ == piece::Color::kBlack) {
+        rect = {static_cast<float>(s->x_ * kSquareSize),
+                static_cast<float>(s->y_ * kSquareSize),
+                static_cast<float>((s->x_ + 1) * kSquareSize),
+                static_cast<float>((s->y_ + 1) * kSquareSize)};
+      } else {
+        rect = {static_cast<float>(s->x_ * kSquareSize),
+                static_cast<float>((board::kSize - s->y_ - 1) * kSquareSize),
+                static_cast<float>((s->x_ + 1) * kSquareSize),
+                static_cast<float>((board::kSize - s->y_) * kSquareSize)};
+      }
 
-      // Render pieces
+      cinder::gl::drawSolidRect(rect);
+      // Render the piece image if it there is a piece on the square.
       if (s->piece_ == nullptr) {
         continue;
       }
       cinder::gl::Texture2dRef ref = cinder::gl::Texture2d::create(
           cinder::loadImage(loadAsset(s->piece_->img_path_)));
-      cinder::gl::draw(ref, s->loc_);
+      cinder::gl::draw(ref, rect);
     }
   }
 }

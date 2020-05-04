@@ -37,10 +37,10 @@ auto Player::PlayMove(const Square *from, const Square *to, Game* game) -> Move 
   }
   if (from->piece_->type_ == piece::PieceType::kKing) {
     if (abs(static_cast<int>(from->x_) - (static_cast<int>(to->x_))) > 1) {
-      return {this, from, to, move_number, true};
+      return {this, from, to,true, move_number};
     }
   }
-  return {this, from, to, move_number, false};
+  return {this, from, to, false, move_number};
 }
 
 auto Player::IsKingInCheck() -> const bool {

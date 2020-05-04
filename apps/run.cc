@@ -21,7 +21,8 @@ const int kFrameRate = 30;
 
 DEFINE_string(color, "",
               "the color of the player in the game (either white or"
-              " black)");
+              " black), or the color of the player's point of view in single "
+              "player mode.");
 DEFINE_string(url, "", "the http server url");
 DEFINE_uint32(game_id, 0, "the game id on the server.");
 

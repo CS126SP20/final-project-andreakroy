@@ -36,8 +36,9 @@ struct Move {
   // The square to which the piece moved.
   const Square* to_;
   // True if the move was a castling move, false otherwise.
-  size_t number_ = 1;
   bool IsCastling_;
+  // The move number
+  size_t number_ = 1;
 };
 
 std::ostream &operator << (std::ostream &os, const Move &move);

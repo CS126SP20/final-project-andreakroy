@@ -26,10 +26,6 @@ Square::Square(const size_t x, const size_t y) {
   } else {
     sq_color_ = green;
   }
-  loc_ = {static_cast<float>(x * kSquareSize),
-          static_cast<float>(y * kSquareSize),
-          static_cast<float>((x + 1) * kSquareSize),
-          static_cast<float>((y + 1) * kSquareSize)};
   piece_ = nullptr;
 }
 Square::~Square() { delete piece_; }
@@ -37,7 +33,6 @@ Square::~Square() { delete piece_; }
 Square::Square(const Square& other) {
   x_ = other.x_;
   y_ = other.y_;
-  loc_ = other.loc_;
   sq_color_ = other.sq_color_;
   if (other.piece_ == nullptr) {
     piece_ = nullptr;
@@ -72,7 +67,6 @@ Square& Square::operator=(const Square& other) {
   x_ = other.x_;
   y_ = other.y_;
   sq_color_ = other.sq_color_;
-  loc_ = other.loc_;
   delete piece_;
   if (other.piece_ == nullptr) {
     piece_ = nullptr;
@@ -109,10 +103,6 @@ Square::Square(size_t x, size_t y, Piece* p) {
   } else {
     sq_color_ = green;
   }
-  loc_ = {static_cast<float>(x * kSquareSize),
-          static_cast<float>(y * kSquareSize),
-          static_cast<float>((x + 1) * kSquareSize),
-          static_cast<float>((y + 1) * kSquareSize)};
   piece_ = p;
 }
 
@@ -189,48 +179,5 @@ void Board::Set(const Square* at, Piece* pt) {
     return;
   }
   s->piece_ = pt;
-}
-
-std::ostream& operator<<(std::ostream& os, const Board& b) {
-  for (int j = 0; j < kSize; j++) {
-    for (int i = 0; i < kSize; i++) {
-      if (b.At(i, j)->piece_ == nullptr) {
-        os << "    ";
-        continue;
-      }
-      piece::PieceType p = b.At(i, j)->piece_->type_;
-      piece::Color c = b.At(i, j)->piece_->color_;
-      switch (c) {
-        case piece::Color::kBlack:
-          os << "B";
-          break;
-        case piece::Color::kWhite:
-          os << "W";
-          break;
-      };
-      switch (p) {
-        case piece::PieceType::kPawn:
-          os << "P  ";
-          continue;
-        case piece::PieceType::kKing:
-          os << "K  ";
-          continue;
-        case piece::PieceType::kQueen:
-          os << "Q  ";
-          continue;
-        case piece::PieceType::kRook:
-          os << "R  ";
-          continue;
-        case piece::PieceType::kBishop:
-          os << "B  ";
-          continue;
-        case piece::PieceType::kKnight:
-          os << "N  ";
-          continue;
-      }
-    }
-    os << "\n";
-  }
-  return os;
 }
 }  // namespace board

@@ -51,8 +51,6 @@ class Square {
   // Integer from 0 through 7 representing the y coordinate on a chess board
   // if viewed as a set of Cartesian coordinates.
   size_t y_;
-  // Rectf holding the square's physical location on the board
-  cinder::Rectf loc_;
   // Color representing the color of the square (green or white)
   cinder::Color sq_color_;
   // Returns whether or not there is a piece at this square.

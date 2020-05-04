@@ -23,6 +23,7 @@ class MyApp : public cinder::app::App {
  private:
   game::Game game_;
   game::Player* player_;
+  piece::Color pov_;
   const board::Square* origin_square_;
   const board::Square* destination_square_;
   game::Player* turn_;
