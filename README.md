@@ -26,13 +26,13 @@ Build the project with CMake using the command `cmake -S $path_to_project -B
     . Then selet the destination move. If the move is successful, the move
      will be made.
 
-##Dependencies
+## Dependencies
 - `Cinder 0.9.2:` https://github.com/cinder/Cinder/releases
 - `libcurl 7.7.0:` https://curl.haxx.se/libcurl/
 - `nlohmann/json 3.7.3:` https://github.com/nlohmann/json
 - `OpenGL 3.2:` https://www.opengl.org/
 
-##Running the Server
+## Running the Server
 To run the server for a multiplayer game, host the flask app in
  `assets` folder on a local server (an Apache server for instance). For a
   tutorial, see https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps.
