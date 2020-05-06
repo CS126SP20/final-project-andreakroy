@@ -71,7 +71,6 @@ TEST_CASE("Test Checkmate", "[game][checkmate]") {
                                         game.board_->At(7, 3), &game));
     REQUIRE(game.EvaluateBoard() == game::GameState::kBlackWin);
   }
-
   SECTION("Test 4 move Checkmate") {
     game::Game game(0);
     game.PlayTurn(game.white_->PlayMove(game.board_->At(4, 1),
