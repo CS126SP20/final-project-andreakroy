@@ -239,7 +239,7 @@ void MyApp::GetUpdate() {
     }
     long response_code;
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
-    if (response_code != request_ok) {
+    if (response_code != kRequestOK) {
       return;
     }
     curl_easy_cleanup(curl);
@@ -296,7 +296,7 @@ void MyApp::PostUpdate(const game::Move move) {
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "");
     curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
     res = curl_easy_perform(curl);
-    if (res != request_ok) {
+    if (res != kRequestOK) {
       std::cout << "Error connecting to server.";
     }
     curl_easy_cleanup(curl);

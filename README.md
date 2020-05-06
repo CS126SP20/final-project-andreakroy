@@ -2,13 +2,12 @@
 A chess game playable between two players over an `http` server.
 
 ## Installation
-Clone the project from Github: `git clone https://github.com/CS126SP20/final
--project-andreakroy.git`.
+Clone the project from Github: `git clone https://github.com/CS126SP20/final-project-andreakroy.git`.
 
 Build the project with CMake using the command `cmake -S $path_to_project -B
  $path_to_binary`.
  
-## Running the App
+## Usage 
  Run the app with the command `./$path_to_binary --url=$server_url --color
  =$color --game_id=$id`.
  
